@@ -2,8 +2,11 @@ package com.finverse.ui;
 
 import java.util.Scanner;
 import com.finverse.model.User;
+import com.finverse.service.AccountService;
 import com.finverse.service.UserService;
 import com.finverse.validation.UserValidation;
+import com.finverse.model.Account;
+import java.math.BigDecimal;
 
 public class BankingUI {
 
@@ -78,7 +81,6 @@ public class BankingUI {
             }
             System.out.println("Password must contain at least 8 characters.");
         }
-
         UserService userService = UserService.getInstance();
         userService.registerUser(user);
     }
@@ -91,14 +93,15 @@ public class BankingUI {
         String password = scanner.nextLine();
         User user = userService.login(email, password);
         if (user != null) {
-            System.out.println("\nWelcome " + user.getFirstName());
+            System.out.println("\nLogin Successful!");
+            userDashboard(user);
         } else {
             System.out.println("\nInvalid Email or Password");
         }
     }
 
     private void userDashboard(User user) {
-        
+
         while (true) {
             System.out.println("\n==============================");
             System.out.println(" Welcome " + user.getFirstName());
@@ -114,10 +117,13 @@ public class BankingUI {
             scanner.nextLine();
             switch (choice) {
                 case 1:
+                    viewProfile(user);
                     break;
                 case 2:
+                    deposit(user);
                     break;
                 case 3:
+                    withdraw(user);
                     break;
                 case 4:
                     break;
@@ -131,4 +137,48 @@ public class BankingUI {
             }
         }
     }
+
+    private void viewProfile(User user) {
+
+        System.out.println("\n========== USER PROFILE ==========");
+        System.out.println("User ID       : " + user.getUserId());
+        System.out.println("First Name    : " + user.getFirstName());
+        System.out.println("Last Name     : " + user.getLastName());
+        System.out.println("Email         : " + user.getEmail());
+        System.out.println("Phone Number  : " + user.getPhoneNumber());
+        System.out.println("Created At    : " + user.getCreatedAt());
+    }
+
+    private void deposit(User user) {
+        Account account = AccountService
+                .getInstance()
+                .getAccount(user.getUserId());
+        System.out.print("Enter Amount : ");
+        BigDecimal amount = scanner.nextBigDecimal();
+        scanner.nextLine();
+        AccountService
+                .getInstance()
+                .deposit(account, amount);
+        System.out.println("\nDeposit Successful!");
+        System.out.println("Updated Balance : ₹" + account.getBalance());
+    }
+
+    private void withdraw(User user) {
+        Account account = AccountService
+                .getInstance()
+                .getAccount(user.getUserId());
+        System.out.print("Enter Amount : ");
+        BigDecimal amount = scanner.nextBigDecimal();
+        scanner.nextLine();
+        boolean success = AccountService
+                .getInstance()
+                .withdraw(account, amount);
+        if (success) {
+            System.out.println("\nWithdrawal Successful!");
+            System.out.println("Remaining Balance : ₹" + account.getBalance());
+        } else {
+            System.out.println("\nInsufficient Balance!");
+        }
+    }
+
 }
