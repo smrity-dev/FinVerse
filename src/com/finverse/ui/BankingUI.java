@@ -8,6 +8,8 @@ import com.finverse.validation.UserValidation;
 public class BankingUI {
 
     Scanner scanner = new Scanner(System.in);
+
+
     public void start() {
         while (true) {
             System.out.println("==================================");
@@ -34,6 +36,7 @@ public class BankingUI {
             }
         }
     }
+
     public void registerUser() {
 
         System.out.println("\n===== User Registration =====");
@@ -92,6 +95,40 @@ public class BankingUI {
         } else {
             System.out.println("\nInvalid Email or Password");
         }
+    }
 
+    private void userDashboard(User user) {
+        
+        while (true) {
+            System.out.println("\n==============================");
+            System.out.println(" Welcome " + user.getFirstName());
+            System.out.println("==============================");
+            System.out.println("1. View Account");
+            System.out.println("2. Deposit");
+            System.out.println("3. Withdraw");
+            System.out.println("4. Transfer");
+            System.out.println("5. Transaction History");
+            System.out.println("6. Logout");
+            System.out.print("Choose Option : ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+            switch (choice) {
+                case 1:
+                    break;
+                case 2:
+                    break;
+                case 3:
+                    break;
+                case 4:
+                    break;
+                case 5:
+                    break;
+                case 6:
+                    System.out.println("Logout Successful!");
+                    return;
+                default:
+                    System.out.println("Invalid Choice!");
+            }
+        }
     }
 }
