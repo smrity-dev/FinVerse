@@ -106,6 +106,7 @@ public class BankingUI {
             System.out.println("\n==============================");
             System.out.println(" Welcome " + user.getFirstName());
             System.out.println("==============================");
+            System.out.println("0. View Profile");
             System.out.println("1. View Account");
             System.out.println("2. Deposit");
             System.out.println("3. Withdraw");
@@ -116,8 +117,11 @@ public class BankingUI {
             int choice = scanner.nextInt();
             scanner.nextLine();
             switch (choice) {
-                case 1:
+                case 0:
                     viewProfile(user);
+                    break;
+                case 1:
+                    viewAccount(user);
                     break;
                 case 2:
                     deposit(user);
@@ -139,7 +143,6 @@ public class BankingUI {
     }
 
     private void viewProfile(User user) {
-
         System.out.println("\n========== USER PROFILE ==========");
         System.out.println("User ID       : " + user.getUserId());
         System.out.println("First Name    : " + user.getFirstName());
@@ -147,6 +150,19 @@ public class BankingUI {
         System.out.println("Email         : " + user.getEmail());
         System.out.println("Phone Number  : " + user.getPhoneNumber());
         System.out.println("Created At    : " + user.getCreatedAt());
+    }
+
+    private void viewAccount(User user) {
+        Account account = AccountService
+                .getInstance()
+                .getAccount(user.getUserId());
+        System.out.println("\n========== ACCOUNT DETAILS ==========");
+        System.out.println("Account ID      : " + account.getAccountId());
+        System.out.println("Account Number  : " + account.getAccountNumber());
+        System.out.println("Account Type    : " + account.getAccountType());
+        System.out.println("Status          : " + account.getAccountStatus());
+        System.out.println("Balance         : ₹" + account.getBalance());
+        System.out.println("Created At      : " + account.getCreatedAt());
     }
 
     private void deposit(User user) {
