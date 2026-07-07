@@ -7,6 +7,9 @@ import com.finverse.service.UserService;
 import com.finverse.validation.UserValidation;
 import com.finverse.model.Account;
 import java.math.BigDecimal;
+import java.util.List;
+import com.finverse.model.Transaction;
+import com.finverse.service.TransactionService;
 
 public class BankingUI {
 
@@ -106,34 +109,36 @@ public class BankingUI {
             System.out.println("\n==============================");
             System.out.println(" Welcome " + user.getFirstName());
             System.out.println("==============================");
-            System.out.println("0. View Profile");
-            System.out.println("1. View Account");
-            System.out.println("2. Deposit");
-            System.out.println("3. Withdraw");
-            System.out.println("4. Transfer");
-            System.out.println("5. Transaction History");
-            System.out.println("6. Logout");
+            System.out.println("1. View Profile");
+            System.out.println("2. View Account");
+            System.out.println("3. Deposit");
+            System.out.println("4. Withdraw");
+            System.out.println("5. Transfer");
+            System.out.println("6. Transaction History");
+            System.out.println("7. Logout");
             System.out.print("Choose Option : ");
             int choice = scanner.nextInt();
             scanner.nextLine();
             switch (choice) {
-                case 0:
+                case 1:
                     viewProfile(user);
                     break;
-                case 1:
+                case 2:
                     viewAccount(user);
                     break;
-                case 2:
+                case 3:
                     deposit(user);
                     break;
-                case 3:
+                case 4:
                     withdraw(user);
                     break;
-                case 4:
-                    break;
                 case 5:
+                    transfer(user);
                     break;
                 case 6:
+                    showTransactions(user);
+                    break;
+                case 7:
                     System.out.println("Logout Successful!");
                     return;
                 default:
@@ -197,4 +202,36 @@ public class BankingUI {
         }
     }
 
+    private void transfer(User user) {
+        Account sender = AccountService.getInstance()
+                .getAccount(user.getUserId());
+        System.out.print("Receiver Account Number : ");
+        String receiver = scanner.nextLine();
+        System.out.print("Amount : ");
+        BigDecimal amount = scanner.nextBigDecimal();
+        scanner.nextLine();
+        boolean success = AccountService.getInstance()
+                .transfer(sender, receiver, amount);
+        if (success) {
+            System.out.println("\nTransfer Successful!");
+            System.out.println("Available Balance : ₹" + sender.getBalance());
+        } else {
+            System.out.println("\nTransfer Failed!");
+        }
+    }
+    private void showTransactions(User user) {
+        Account account = AccountService.getInstance()
+                .getAccount(user.getUserId());
+        List<Transaction> transactions =
+                TransactionService.getInstance()
+                        .getTransactions(account.getAccountId());
+        System.out.println("\n========= TRANSACTION HISTORY =========");
+        if (transactions.isEmpty()) {
+            System.out.println("No Transactions Found.");
+            return;
+        }
+        for (Transaction transaction : transactions) {
+            System.out.println(transaction);
+        }
+    }
 }
