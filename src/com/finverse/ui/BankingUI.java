@@ -115,7 +115,8 @@ public class BankingUI {
             System.out.println("4. Withdraw");
             System.out.println("5. Transfer");
             System.out.println("6. Transaction History");
-            System.out.println("7. Logout");
+            System.out.println("7. Mini Statement");
+            System.out.println("8. Logout");
             System.out.print("Choose Option : ");
             int choice = scanner.nextInt();
             scanner.nextLine();
@@ -139,6 +140,9 @@ public class BankingUI {
                     showTransactions(user);
                     break;
                 case 7:
+                    miniStatement(user);
+                    break;
+                case 8:
                     System.out.println("Logout Successful!");
                     return;
                 default:
@@ -232,6 +236,30 @@ public class BankingUI {
         }
         for (Transaction transaction : transactions) {
             System.out.println(transaction);
+        }
+    }
+
+    private void miniStatement(User user) {
+        Account account = AccountService.getInstance()
+                .getAccount(user.getUserId());
+        List<Transaction> transactions =
+                TransactionService.getInstance()
+                        .getMiniStatement(account.getAccountId());
+        System.out.println("\n========== MINI STATEMENT ==========");
+        if (transactions.isEmpty()) {
+            System.out.println("No Transactions Found.");
+            return;
+        }
+        for (Transaction transaction : transactions) {
+            System.out.println("--------------------------------");
+            System.out.println("Time : "
+                    + transaction.getTransactionTime());
+            System.out.println("Type : "
+                    + transaction.getTransactionType());
+            System.out.println("Amount : ₹"
+                    + transaction.getAmount());
+            System.out.println("Balance : ₹"
+                    + transaction.getBalanceAfterTransaction());
         }
     }
 }
