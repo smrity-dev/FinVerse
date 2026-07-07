@@ -7,7 +7,6 @@ public class Account {
 
     private int accountId;
     private String accountNumber;
-    private static int nextAccountNumber = 100001;
     private AccountType accountType;
     private AccountStatus accountStatus;
     private BigDecimal balance;
@@ -17,7 +16,6 @@ public class Account {
 
     // Default Constructor
     public Account() {
-        this.accountNumber = "FV" + nextAccountNumber++;
         this.balance = BigDecimal.ZERO;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();

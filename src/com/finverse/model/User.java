@@ -14,7 +14,6 @@ public class User {
     // User class Declarations
 
     private int userId;
-    private static int nextUserId = 1000;
     private String firstName;
     private String lastName;
     private String email;
@@ -26,7 +25,6 @@ public class User {
     // Default Constructor
 
     public User() {
-        this.userId = nextUserId++;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
