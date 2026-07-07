@@ -7,7 +7,7 @@ public class Transaction {
 
     // Declare private variables
     private int transactionId;
-    private String transactionType;
+    private TransactionType transactionType;
     private BigDecimal amount;
     private BigDecimal balanceAfterTransaction;
     private String remarks;
@@ -26,10 +26,10 @@ public class Transaction {
         this.transactionId = transactionId;
     }
 
-    public String getTransactionType() {
+    public TransactionType getTransactionType() {
         return transactionType;
     }
-    public void setTransactionType(String transactionType) {
+    public void setTransactionType(TransactionType transactionType) {
         this.transactionType = transactionType;
     }
 
@@ -68,8 +68,9 @@ public class Transaction {
         this.accountId = accountId;
     }
 
+
     // Generate Constructor
-    public Transaction(int transactionId, String transactionType, BigDecimal amount, BigDecimal balanceAfterTransaction, String remarks, LocalDateTime transactionTime, int accountId) {
+    public Transaction(int transactionId, TransactionType transactionType, BigDecimal amount, BigDecimal balanceAfterTransaction, String remarks, LocalDateTime transactionTime, int accountId) {
         this.transactionId = transactionId;
         this.transactionType = transactionType;
         this.amount = amount;
