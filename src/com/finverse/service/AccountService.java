@@ -8,6 +8,7 @@ import com.finverse.model.AccountType;
 import com.finverse.model.User;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import com.finverse.model.TransactionType;
 
 public class AccountService {
 
@@ -48,4 +49,68 @@ public class AccountService {
         return accountDAO.getAccountByUserId(userId);
     }
 
+    public void deposit(Account account, BigDecimal amount) {
+        account.setBalance(account.getBalance().add(amount));
+        account.setUpdatedAt(LocalDateTime.now());
+        accountDAO.updateAccount(account);
+        TransactionService.getInstance().saveTransaction(
+                account.getAccountId(),
+                TransactionType.DEPOSIT,
+                amount,
+                account.getBalance(),
+                "Cash Deposit"
+        );
+    }
+
+    public boolean withdraw(Account account, BigDecimal amount) {
+        if (account.getBalance().compareTo(amount) < 0) {
+            return false;
+        }
+        account.setBalance(account.getBalance().subtract(amount));
+        account.setUpdatedAt(LocalDateTime.now());
+        accountDAO.updateAccount(account);
+        TransactionService.getInstance().saveTransaction(
+                account.getAccountId(),
+                TransactionType.WITHDRAW,
+                amount,
+                account.getBalance(),
+                "Cash Withdrawal"
+        );
+        return true;
+    }
+
+    public boolean transfer(Account sender,
+                            String receiverAccountNumber,
+                            BigDecimal amount) {
+        Account receiver = accountDAO.getAccountByAccountNumber(receiverAccountNumber);
+        if (receiver == null) {
+            return false;
+        }
+        if (sender.getBalance().compareTo(amount) < 0) {
+            return false;
+        }
+        // Debit Sender
+        sender.setBalance(sender.getBalance().subtract(amount));
+        sender.setUpdatedAt(LocalDateTime.now());
+        // Credit Receiver
+        receiver.setBalance(receiver.getBalance().add(amount));
+        receiver.setUpdatedAt(LocalDateTime.now());
+        accountDAO.updateAccount(sender);
+        accountDAO.updateAccount(receiver);
+        TransactionService.getInstance().saveTransaction(
+                sender.getAccountId(),
+                TransactionType.TRANSFER,
+                amount,
+                sender.getBalance(),
+                "Transfer to " + receiver.getAccountNumber()
+        );
+        TransactionService.getInstance().saveTransaction(
+                receiver.getAccountId(),
+                TransactionType.DEPOSIT,
+                amount,
+                receiver.getBalance(),
+                "Received from " + sender.getAccountNumber()
+        );
+        return true;
+    }
 }
