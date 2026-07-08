@@ -1,10 +1,13 @@
 package com.finverse.ui;
 
 import java.util.Scanner;
+//User se inputs lega unki information ke lie
 import com.finverse.model.User;
+//Email,phone,password verification ke lie
+import com.finverse.validation.UserValidation;
+
 import com.finverse.service.AccountService;
 import com.finverse.service.UserService;
-import com.finverse.validation.UserValidation;
 import com.finverse.model.Account;
 import java.math.BigDecimal;
 import java.util.List;
@@ -14,7 +17,6 @@ import com.finverse.service.TransactionService;
 public class BankingUI {
 
     Scanner scanner = new Scanner(System.in);
-
 
     public void start() {
         while (true) {
@@ -46,12 +48,12 @@ public class BankingUI {
     public void registerUser() {
 
         System.out.println("\n===== User Registration =====");
+        // Object of User class to get the information of their
         User user = new User();
         System.out.print("First Name: ");
         user.setFirstName(scanner.nextLine());
         System.out.print("Last Name: ");
         user.setLastName(scanner.nextLine());
-
         String email;
         while (true) {
             System.out.print("Enter Email : ");
@@ -71,7 +73,7 @@ public class BankingUI {
                 user.setPhoneNumber(phone);
                 break;
             }
-            System.out.println("Invalid Phone Number!");
+            System.out.println("Invalid Phone Number! Please Enter 10 digit's valid Phone number");
         }
         
         String password;
@@ -82,7 +84,7 @@ public class BankingUI {
                 user.setPassword(password);
                 break;
             }
-            System.out.println("Password must contain at least 8 characters.");
+            System.out.println("Password must contain at least a uppercase , a lowercase, a digit , a special character and 8 characters or more ");
         }
         UserService userService = UserService.getInstance();
         userService.registerUser(user);
@@ -162,9 +164,7 @@ public class BankingUI {
     }
 
     private void viewAccount(User user) {
-        Account account = AccountService
-                .getInstance()
-                .getAccount(user.getUserId());
+        Account account = AccountService.getInstance().getAccount(user.getUserId());
         System.out.println("\n========== ACCOUNT DETAILS ==========");
         System.out.println("Account ID      : " + account.getAccountId());
         System.out.println("Account Number  : " + account.getAccountNumber());
@@ -175,29 +175,21 @@ public class BankingUI {
     }
 
     private void deposit(User user) {
-        Account account = AccountService
-                .getInstance()
-                .getAccount(user.getUserId());
+        Account account = AccountService.getInstance().getAccount(user.getUserId());
         System.out.print("Enter Amount : ");
         BigDecimal amount = scanner.nextBigDecimal();
         scanner.nextLine();
-        AccountService
-                .getInstance()
-                .deposit(account, amount);
+        AccountService.getInstance().deposit(account, amount);
         System.out.println("\nDeposit Successful!");
         System.out.println("Updated Balance : ₹" + account.getBalance());
     }
 
     private void withdraw(User user) {
-        Account account = AccountService
-                .getInstance()
-                .getAccount(user.getUserId());
+        Account account = AccountService.getInstance().getAccount(user.getUserId());
         System.out.print("Enter Amount : ");
         BigDecimal amount = scanner.nextBigDecimal();
         scanner.nextLine();
-        boolean success = AccountService
-                .getInstance()
-                .withdraw(account, amount);
+        boolean success = AccountService.getInstance().withdraw(account, amount);
         if (success) {
             System.out.println("\nWithdrawal Successful!");
             System.out.println("Remaining Balance : ₹" + account.getBalance());
@@ -207,15 +199,13 @@ public class BankingUI {
     }
 
     private void transfer(User user) {
-        Account sender = AccountService.getInstance()
-                .getAccount(user.getUserId());
+        Account sender = AccountService.getInstance().getAccount(user.getUserId());
         System.out.print("Receiver Account Number : ");
         String receiver = scanner.nextLine();
         System.out.print("Amount : ");
         BigDecimal amount = scanner.nextBigDecimal();
         scanner.nextLine();
-        boolean success = AccountService.getInstance()
-                .transfer(sender, receiver, amount);
+        boolean success = AccountService.getInstance().transfer(sender, receiver, amount);
         if (success) {
             System.out.println("\nTransfer Successful!");
             System.out.println("Available Balance : ₹" + sender.getBalance());
@@ -224,11 +214,9 @@ public class BankingUI {
         }
     }
     private void showTransactions(User user) {
-        Account account = AccountService.getInstance()
-                .getAccount(user.getUserId());
-        List<Transaction> transactions =
-                TransactionService.getInstance()
-                        .getTransactions(account.getAccountId());
+        Account account = AccountService.getInstance().getAccount(user.getUserId());
+        List<Transaction> transactions = TransactionService.getInstance()
+                .getTransactions(account.getAccountId());
         System.out.println("\n========= TRANSACTION HISTORY =========");
         if (transactions.isEmpty()) {
             System.out.println("No Transactions Found.");
@@ -240,10 +228,8 @@ public class BankingUI {
     }
 
     private void miniStatement(User user) {
-        Account account = AccountService.getInstance()
-                .getAccount(user.getUserId());
-        List<Transaction> transactions =
-                TransactionService.getInstance()
+        Account account = AccountService.getInstance().getAccount(user.getUserId());
+        List<Transaction> transactions = TransactionService.getInstance()
                         .getMiniStatement(account.getAccountId());
         System.out.println("\n========== MINI STATEMENT ==========");
         if (transactions.isEmpty()) {
@@ -252,14 +238,10 @@ public class BankingUI {
         }
         for (Transaction transaction : transactions) {
             System.out.println("--------------------------------");
-            System.out.println("Time : "
-                    + transaction.getTransactionTime());
-            System.out.println("Type : "
-                    + transaction.getTransactionType());
-            System.out.println("Amount : ₹"
-                    + transaction.getAmount());
-            System.out.println("Balance : ₹"
-                    + transaction.getBalanceAfterTransaction());
+            System.out.println("Time : " + transaction.getTransactionTime());
+            System.out.println("Type : " + transaction.getTransactionType());
+            System.out.println("Amount : ₹" + transaction.getAmount());
+            System.out.println("Balance : ₹" + transaction.getBalanceAfterTransaction());
         }
     }
 }
