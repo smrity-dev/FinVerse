@@ -110,4 +110,8 @@ public class AccountService {
         );
         return true;
     }
+
+    public boolean accountExists(String accountNumber) {
+        return accountDAO.getAccountByAccountNumber(accountNumber) != null;
+    }
 }
