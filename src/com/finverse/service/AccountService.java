@@ -87,6 +87,9 @@ public class AccountService {
         if (sender.getBalance().compareTo(amount) < 0) {
             return false;
         }
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            return false;
+        }
         // Debit Sender
         sender.setBalance(sender.getBalance().subtract(amount));
         sender.setUpdatedAt(LocalDateTime.now());
