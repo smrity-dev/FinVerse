@@ -241,13 +241,52 @@ public class BankingUI {
     }
 
     private void transfer(User user) {
-        Account sender = AccountService.getInstance().getAccount(user.getUserId());
-        System.out.print("Receiver Account Number : ");
-        String receiver = scanner.nextLine();
-        System.out.print("Amount : ");
-        BigDecimal amount = scanner.nextBigDecimal();
-        scanner.nextLine();
-        boolean success = AccountService.getInstance().transfer(sender, receiver, amount);
+        AccountService accountService = AccountService.getInstance();
+        Account sender = accountService.getAccount(user.getUserId());
+        String receiverAccount;
+        while (true) {
+            System.out.print("Receiver Account Number : ");
+            receiverAccount = scanner.nextLine().trim();
+            if (receiverAccount.isEmpty()) {
+                System.out.println("Account Number cannot be empty!");
+                continue;
+            }
+            if (receiverAccount.equals(sender.getAccountNumber())) {
+                System.out.println("You cannot transfer money to your own account!");
+                continue;
+            }
+            if (!accountService.accountExists(receiverAccount)) {
+                System.out.println("Account Number not found!");
+                continue;
+            }
+            break;
+        }
+        BigDecimal amount;
+        while (true) {
+            System.out.print("Amount : ₹");
+            amount = scanner.nextBigDecimal();
+            scanner.nextLine();
+            if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+                System.out.println("Amount must be greater than zero!");
+                continue;
+            }
+            if (sender.getBalance().compareTo(amount) < 0) {
+                System.out.println("Insufficient Balance!");
+                continue;
+            }
+            break;
+        }
+        System.out.println("\n========= CONFIRM TRANSFER =========");
+        System.out.println("From Account : " + sender.getAccountNumber());
+        System.out.println("To Account   : " + receiverAccount);
+        System.out.println("Amount       : ₹" + amount);
+        System.out.print("\nConfirm Transfer? (Y/N) : ");
+        String choice = scanner.nextLine();
+        if (!choice.equalsIgnoreCase("Y")) {
+            System.out.println("Transfer Cancelled!");
+            return;
+        }
+        boolean success = accountService.transfer(sender, receiverAccount, amount);
         if (success) {
             System.out.println("\nTransfer Successful!");
             System.out.println("Available Balance : ₹" + sender.getBalance());
@@ -255,6 +294,7 @@ public class BankingUI {
             System.out.println("\nTransfer Failed!");
         }
     }
+
     private void showTransactions(User user) {
         Account account = AccountService.getInstance().getAccount(user.getUserId());
         List<Transaction> transactions = TransactionService.getInstance()
