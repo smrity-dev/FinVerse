@@ -50,6 +50,10 @@ public class AccountService {
     }
 
     public void deposit(Account account, BigDecimal amount) {
+
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            return;
+        }
         account.setBalance(account.getBalance().add(amount));
         account.setUpdatedAt(LocalDateTime.now());
         accountDAO.updateAccount(account);
