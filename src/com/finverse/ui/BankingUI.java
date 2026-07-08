@@ -264,18 +264,19 @@ public class BankingUI {
         BigDecimal amount;
         while (true) {
             System.out.print("Amount : ₹");
-            amount = scanner.nextBigDecimal();
-            scanner.nextLine();
-            if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-                System.out.println("Amount must be greater than zero!");
-                continue;
+            String input = scanner.nextLine();
+            try {
+                amount = new BigDecimal(input);
+                if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+                    System.out.println("Amount must be greater than zero!");
+                    continue;
+                }
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid amount!");
             }
-            if (sender.getBalance().compareTo(amount) < 0) {
-                System.out.println("Insufficient Balance!");
-                continue;
-            }
-            break;
         }
+
         System.out.println("\n========= CONFIRM TRANSFER =========");
         System.out.println("From Account : " + sender.getAccountNumber());
         System.out.println("To Account   : " + receiverAccount);
