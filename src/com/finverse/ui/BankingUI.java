@@ -250,16 +250,50 @@ public class BankingUI {
     }
 
     private void withdraw(User user) {
-        Account account = AccountService.getInstance().getAccount(user.getUserId());
-        System.out.print("Enter Amount : ");
-        BigDecimal amount = scanner.nextBigDecimal();
-        scanner.nextLine();
-        boolean success = AccountService.getInstance().withdraw(account, amount);
-        if (success) {
-            System.out.println("\nWithdrawal Successful!");
-            System.out.println("Remaining Balance : ₹" + account.getBalance());
-        } else {
-            System.out.println("\nInsufficient Balance!");
+        
+        AccountService accountService = AccountService.getInstance();
+        Account account = accountService.getAccount(user.getUserId());
+        BigDecimal amount;
+        while (true) {
+            System.out.print("Enter Amount : ₹");
+            String input = scanner.nextLine();
+            try {
+                amount = new BigDecimal(input);
+                if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+                    System.out.println("Amount must be greater than 0!");
+                    continue;
+                }
+                if (account.getBalance().compareTo(amount) < 0) {
+                    System.out.println("Insufficient Balance!");
+                    System.out.println("Available Balance : ₹" + account.getBalance());
+                    continue;
+                }
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid Amount! Please enter a valid number.");
+            }
+        }
+        while (true) {
+            System.out.println("\n========== CONFIRM WITHDRAW ==========");
+            System.out.println("Account Number : " + account.getAccountNumber());
+            System.out.println("Withdraw Amount : ₹" + amount);
+            System.out.print("\nConfirm Withdrawal? (Y/N) : ");
+            String choice = scanner.nextLine();
+            if (choice.equalsIgnoreCase("Y")) {
+                boolean success = accountService.withdraw(account, amount);
+                if (success) {
+                    System.out.println("\nWithdrawal Successful!");
+                    System.out.println("Remaining Balance : ₹" + account.getBalance());
+                } else {
+                    System.out.println("\nWithdrawal Failed!");
+                }
+                return;
+            } else if (choice.equalsIgnoreCase("N")) {
+                System.out.println("Withdrawal Cancelled!");
+                return;
+            } else {
+                System.out.println("Invalid Choice! Please enter Y or N.");
+            }
         }
     }
 
