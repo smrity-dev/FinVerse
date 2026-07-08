@@ -67,12 +67,20 @@ public class AccountService {
     }
 
     public boolean withdraw(Account account, BigDecimal amount) {
+
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            return false;
+        }
+
         if (account.getBalance().compareTo(amount) < 0) {
             return false;
         }
+
         account.setBalance(account.getBalance().subtract(amount));
         account.setUpdatedAt(LocalDateTime.now());
+
         accountDAO.updateAccount(account);
+
         TransactionService.getInstance().saveTransaction(
                 account.getAccountId(),
                 TransactionType.WITHDRAW,
@@ -80,6 +88,7 @@ public class AccountService {
                 account.getBalance(),
                 "Cash Withdrawal"
         );
+
         return true;
     }
 
