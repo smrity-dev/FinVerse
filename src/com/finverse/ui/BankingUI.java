@@ -2,6 +2,7 @@ package com.finverse.ui;
 
 import java.util.Scanner;
 //User se inputs lega unki information ke lie
+import com.finverse.dao.UserDAO;
 import com.finverse.model.User;
 //Email,phone,password verification ke lie
 import com.finverse.validation.UserValidation;
@@ -54,10 +55,18 @@ public class BankingUI {
         user.setFirstName(scanner.nextLine());
         System.out.print("Last Name: ");
         user.setLastName(scanner.nextLine());
+
+        UserService userService = UserService.getInstance();
+
         String email;
         while (true) {
             System.out.print("Enter Email : ");
             email = scanner.nextLine();
+
+            if (userService.emailExists(email)) {
+                System.out.println("Email already exists!");
+                continue;
+            }
             if (UserValidation.isValidEmail(email)) {
                 user.setEmail(email);
                 break;
@@ -69,6 +78,10 @@ public class BankingUI {
         while (true) {
             System.out.print("Enter Phone Number : ");
             phone = scanner.nextLine();
+            if (userService.phoneExists(phone)) {
+                System.out.println("Phone already registered!");
+                continue;
+            }
             if (UserValidation.isValidPhone(phone)) {
                 user.setPhoneNumber(phone);
                 break;
@@ -86,22 +99,51 @@ public class BankingUI {
             }
             System.out.println("Password must contain at least a uppercase , a lowercase, a digit , a special character and 8 characters or more ");
         }
-        UserService userService = UserService.getInstance();
         userService.registerUser(user);
     }
 
     public void loginUser() {
+
         UserService userService = UserService.getInstance();
-        System.out.print("Email : ");
-        String email = scanner.nextLine();
-        System.out.print("Password : ");
-        String password = scanner.nextLine();
-        User user = userService.login(email, password);
-        if (user != null) {
-            System.out.println("\nLogin Successful!");
-            userDashboard(user);
-        } else {
-            System.out.println("\nInvalid Email or Password");
+
+        String email;
+
+        while (true) {
+
+            System.out.print("Enter Email : ");
+            email = scanner.nextLine();
+
+            if (!UserValidation.isValidEmail(email)) {
+                System.out.println("Invalid Email Format!");
+                continue;
+            }
+
+            if (!userService.emailExists(email)) {
+                System.out.println("This Email is not Registered!");
+                continue;
+            }
+
+            break;
+        }
+
+        int attempts = 0;
+        while (attempts < 3) {
+            System.out.print("Enter Password : ");
+            String password = scanner.nextLine();
+            User user = userService.login(email, password);
+            if (user != null) {
+                System.out.println("\nLogin Successful!");
+                userDashboard(user);
+                return;
+            }
+            attempts++;
+            if (attempts < 3) {
+                System.out.println("Incorrect Password!");
+                System.out.println("Attempts Left : " + (3 - attempts));
+            } else {
+                System.out.println("Too many failed attempts!");
+                System.out.println("Returning to Main Menu...");
+            }
         }
     }
 
