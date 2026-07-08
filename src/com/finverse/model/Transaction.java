@@ -2,6 +2,7 @@ package com.finverse.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Transaction {
 
@@ -83,13 +84,17 @@ public class Transaction {
     // Generate toString()
     @Override
     public String toString() {
+
+        DateTimeFormatter formatter =
+                DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy | hh:mm:ss a");
+
         return "Transaction{" +
                 "transactionId=" + transactionId +
                 ", transactionType='" + transactionType + '\'' +
                 ", amount=" + amount +
                 ", balanceAfterTransaction=" + balanceAfterTransaction +
                 ", remarks='" + remarks + '\'' +
-                ", transactionTime=" + transactionTime +
+                ", transactionTime=" + transactionTime.format(formatter) +
                 ", accountId=" + accountId +
                 '}';
     }

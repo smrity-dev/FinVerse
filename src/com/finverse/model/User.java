@@ -1,6 +1,7 @@
 package com.finverse.model;
 
-import java.time.LocalDateTime;    // To store user's Updates
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Represents a user in the FinVerse banking system.
@@ -10,9 +11,7 @@ import java.time.LocalDateTime;    // To store user's Updates
  */
 
 public class User {
-
     // User class Declarations
-
     private int userId;
     private String firstName;
     private String lastName;
@@ -23,14 +22,12 @@ public class User {
     private LocalDateTime updatedAt;
 
     // Default Constructor
-
     public User() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
     // Use of Getter/Setter Methods [by right click {generate}]
-
     public int getUserId() {
         return userId;
     }
@@ -87,6 +84,7 @@ public class User {
         this.updatedAt = updatedAt;
     }
 
+    // Generate Constructor
     public User(int userId, String firstName, String lastName, String email, String phoneNumber, String password, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.userId = userId;
         this.firstName = firstName;
@@ -101,6 +99,10 @@ public class User {
 
     @Override
     public String toString() {
+
+        DateTimeFormatter formatter =
+                DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy | hh:mm:ss a");
+
         return "User{" +
                 "userId=" + userId +
                 ", firstName='" + firstName + '\'' +
@@ -108,8 +110,8 @@ public class User {
                 ", email='" + email + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", password='" + password + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
+                ", createdAt=" + createdAt.format(formatter) +
+                ", updatedAt=" + updatedAt.format(formatter) +
                 '}';
     }
 }

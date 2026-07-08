@@ -2,6 +2,7 @@ package com.finverse.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Account {
 
@@ -91,14 +92,19 @@ public class Account {
 
     @Override
     public String toString() {
+
+
+        DateTimeFormatter formatter =
+                DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy | hh:mm:ss a");
+
         return "Account{" + "accountId=" + accountId +
                 ", accountNumber='" + accountNumber + '\'' +
                 ", accountType='" + accountType + '\'' +
                 ", accountStatus='" + accountStatus + '\'' +
                 ", balance=" + balance +
                 ", userId=" + userId +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
+                ", createdAt=" + createdAt.format(formatter) +
+                ", updatedAt=" + updatedAt.format(formatter) +
                 '}';
     }
 }
