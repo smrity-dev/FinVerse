@@ -14,8 +14,8 @@ public class AccountService {
 
     private static AccountService instance;
     private AccountDAO accountDAO = new AccountDAOImpl();
-    private static int nextAccountId = 1001;
-    private static int nextAccountNumber = 100001;
+    private static int nextAccountId = 1;
+    private static int nextAccountNumber = 1000000;
 
     private AccountService() {
     }
@@ -79,9 +79,7 @@ public class AccountService {
         return true;
     }
 
-    public boolean transfer(Account sender,
-                            String receiverAccountNumber,
-                            BigDecimal amount) {
+    public boolean transfer(Account sender, String receiverAccountNumber, BigDecimal amount) {
         Account receiver = accountDAO.getAccountByAccountNumber(receiverAccountNumber);
         if (receiver == null) {
             return false;
@@ -97,8 +95,7 @@ public class AccountService {
         receiver.setUpdatedAt(LocalDateTime.now());
         accountDAO.updateAccount(sender);
         accountDAO.updateAccount(receiver);
-        TransactionService.getInstance().saveTransaction(
-                sender.getAccountId(),
+        TransactionService.getInstance().saveTransaction(sender.getAccountId(),
                 TransactionType.TRANSFER,
                 amount,
                 sender.getBalance(),
