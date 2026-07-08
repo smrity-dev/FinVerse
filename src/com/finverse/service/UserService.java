@@ -22,6 +22,14 @@ public class UserService {
         return instance;
     }
 
+    public boolean emailExists(String email){
+        return userDAO.emailExists(email);
+    }
+
+    public boolean phoneExists(String phone){
+        return userDAO.phoneExists(phone);
+    }
+
     public void registerUser(User user) {
 
         if (userDAO.emailExists(user.getEmail())) {
@@ -32,12 +40,13 @@ public class UserService {
             System.out.println("Phone Number Already Registered!");
             return;
         }
+        //User ke andar ID and time set ho gyi
 
         // Auto Generate User ID
         user.setUserId(nextUserId++);
-
-        // Created & Updated Time
+        // Created Time
         user.setCreatedAt(LocalDateTime.now());
+        // Updated Time
         user.setUpdatedAt(LocalDateTime.now());
         userDAO.saveUser(user);
         System.out.println("\nRegistration Successful!");
