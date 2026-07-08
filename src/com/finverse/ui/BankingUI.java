@@ -217,11 +217,34 @@ public class BankingUI {
     }
 
     private void deposit(User user) {
-        Account account = AccountService.getInstance().getAccount(user.getUserId());
-        System.out.print("Enter Amount : ");
-        BigDecimal amount = scanner.nextBigDecimal();
-        scanner.nextLine();
-        AccountService.getInstance().deposit(account, amount);
+
+        AccountService accountService = AccountService.getInstance();
+        Account account = accountService.getAccount(user.getUserId());
+        BigDecimal amount;
+        while (true) {
+            System.out.print("Enter Amount : ₹");
+            String input = scanner.nextLine();
+            try {
+                amount = new BigDecimal(input);
+                if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+                    System.out.println("Amount must be greater than 0!");
+                    continue;
+                }
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid Amount! Please enter a valid number.");
+            }
+        }
+        System.out.println("\n========== CONFIRM DEPOSIT ==========");
+        System.out.println("Account Number : " + account.getAccountNumber());
+        System.out.println("Deposit Amount : ₹" + amount);
+        System.out.print("\nConfirm Deposit? (Y/N) : ");
+        String choice = scanner.nextLine();
+        if (!choice.equalsIgnoreCase("Y")) {
+            System.out.println("Deposit Cancelled!");
+            return;
+        }
+        accountService.deposit(account, amount);
         System.out.println("\nDeposit Successful!");
         System.out.println("Updated Balance : ₹" + account.getBalance());
     }
@@ -284,7 +307,7 @@ public class BankingUI {
         System.out.print("\nConfirm Transfer? (Y/N) : ");
         String choice = scanner.nextLine();
         if (!choice.equalsIgnoreCase("Y")) {
-            System.out.println("Transfer Cancelled!");
+            System.out.println("Transfer Cancelled! Not enough amount to transfer");
             return;
         }
         boolean success = accountService.transfer(sender, receiverAccount, amount);
