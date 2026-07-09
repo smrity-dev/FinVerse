@@ -6,7 +6,6 @@ import com.finverse.dao.UserDAO;
 import com.finverse.model.User;
 //Email,phone,password verification ke lie
 import com.finverse.validation.UserValidation;
-
 import com.finverse.service.AccountService;
 import com.finverse.service.UserService;
 import com.finverse.model.Account;
@@ -88,7 +87,7 @@ public class BankingUI {
             }
             System.out.println("Invalid Phone Number! Please Enter 10 digit's valid Phone number");
         }
-        
+
         String password;
         while (true) {
             System.out.print("Create Password : ");
@@ -105,24 +104,18 @@ public class BankingUI {
     public void loginUser() {
 
         UserService userService = UserService.getInstance();
-
         String email;
-
         while (true) {
-
             System.out.print("Enter Email : ");
             email = scanner.nextLine();
-
             if (!UserValidation.isValidEmail(email)) {
                 System.out.println("Invalid Email Format!");
                 continue;
             }
-
             if (!userService.emailExists(email)) {
-                System.out.println("This Email is not Registered!");
+                System.out.println("This Email is not Registered! Use Registered Email");
                 continue;
             }
-
             break;
         }
 
@@ -160,7 +153,10 @@ public class BankingUI {
             System.out.println("5. Transfer");
             System.out.println("6. Transaction History");
             System.out.println("7. Mini Statement");
-            System.out.println("8. Logout");
+            System.out.println("8. Change Password");
+            System.out.println("9. Forgot Password");
+            System.out.println("10. Logout");
+
             System.out.print("Choose Option : ");
             int choice = scanner.nextInt();
             scanner.nextLine();
@@ -187,6 +183,12 @@ public class BankingUI {
                     miniStatement(user);
                     break;
                 case 8:
+                    changePassword(user);
+                    break;
+                case 9:
+                    forgotPassword();
+                    break;
+                case 10:
                     System.out.println("Logout Successful!");
                     return;
                 default:
@@ -250,7 +252,7 @@ public class BankingUI {
     }
 
     private void withdraw(User user) {
-        
+
         AccountService accountService = AccountService.getInstance();
         Account account = accountService.getAccount(user.getUserId());
         BigDecimal amount;
@@ -370,7 +372,7 @@ public class BankingUI {
     private void miniStatement(User user) {
         Account account = AccountService.getInstance().getAccount(user.getUserId());
         List<Transaction> transactions = TransactionService.getInstance()
-                        .getMiniStatement(account.getAccountId());
+                .getMiniStatement(account.getAccountId());
         System.out.println("\n========== MINI STATEMENT ==========");
         if (transactions.isEmpty()) {
             System.out.println("No Transactions Found.");
@@ -384,4 +386,35 @@ public class BankingUI {
             System.out.println("Balance : ₹" + transaction.getBalanceAfterTransaction());
         }
     }
+
+    private void changePassword(User user) {
+
+        UserService userService = UserService.getInstance();
+        while (true) {
+            System.out.print("Enter Current Password : ");
+            String currentPassword = scanner.nextLine();
+            String newPassword;
+            while (true) {
+                System.out.print("Enter New Password : ");
+                newPassword = scanner.nextLine();
+                if (UserValidation.isValidPassword(newPassword)) {
+                    break;
+                }
+                System.out.println("Password must contain uppercase, lowercase, digit, special character and minimum 8 characters.");
+            }
+            System.out.print("Confirm New Password : ");
+            String confirmPassword = scanner.nextLine();
+            if (!newPassword.equals(confirmPassword)) {
+                System.out.println("Passwords do not match!");
+                continue;
+            }
+            boolean success = userService.changePassword(user, currentPassword, newPassword);
+            if (success) {
+                System.out.println("\nPassword Changed Successfully!");
+                return;
+            }
+            System.out.println("Current Password is Incorrect!");
+        }
+    }
+
 }
