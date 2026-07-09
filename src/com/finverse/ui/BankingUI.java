@@ -417,4 +417,52 @@ public class BankingUI {
         }
     }
 
+    private void forgotPassword() {
+
+        UserService userService = UserService.getInstance();
+        User user;
+        while (true) {
+            System.out.print("Enter Registered Email : ");
+            String email = scanner.nextLine();
+            if (!UserValidation.isValidEmail(email)) {
+                System.out.println("Invalid Email Format!");
+                continue;
+            }
+            user = userService.getUserByEmail(email);
+            if (user == null) {
+                System.out.println("Email Not Registered!");
+                continue;
+            }
+            break;
+        }
+        while (true) {
+            System.out.print("Enter Registered Phone Number : ");
+            String phone = scanner.nextLine();
+            if (!phone.equals(user.getPhoneNumber())) {
+                System.out.println("Phone Number does not match!");
+                continue;
+            }
+            break;
+        }
+        String newPassword;
+        while (true) {
+            System.out.print("Enter New Password : ");
+            newPassword = scanner.nextLine();
+            if (UserValidation.isValidPassword(newPassword)) {
+                break;
+            }
+            System.out.println("Invalid Password Format!");
+        }
+        while (true) {
+            System.out.print("Confirm New Password : ");
+            String confirmPassword = scanner.nextLine();
+            if (!newPassword.equals(confirmPassword)) {
+                System.out.println("Passwords do not match!");
+                continue;
+            }
+            break;
+        }
+        userService.resetPassword(user, newPassword);
+        System.out.println("\nPassword Reset Successfully!");
+    }
 }
