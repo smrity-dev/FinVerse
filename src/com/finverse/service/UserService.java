@@ -75,5 +75,11 @@ public class UserService {
     public User getUserByEmail(String email) {
         return userDAO.getUserByEmail(email);
     }
+
+    public void resetPassword(User user, String newPassword) {
+        user.setPassword(newPassword);
+        user.setUpdatedAt(LocalDateTime.now());
+        userDAO.updateUser(user);
+    }
     
 }
