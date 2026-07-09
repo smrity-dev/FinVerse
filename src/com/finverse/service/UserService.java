@@ -61,5 +61,19 @@ public class UserService {
     public User login(String email, String password) {
         return userDAO.login(email, password);
     }
+
+    public boolean changePassword(User user, String currentPassword, String newPassword) {
+        if (!user.getPassword().equals(currentPassword)) {
+            return false;
+        }
+        user.setPassword(newPassword);
+        user.setUpdatedAt(LocalDateTime.now());
+        userDAO.updateUser(user);
+        return true;
+    }
+
+    public User getUserByEmail(String email) {
+        return userDAO.getUserByEmail(email);
+    }
     
 }
