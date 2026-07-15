@@ -62,4 +62,14 @@ public class UserDAOImpl implements UserDAO {
         }
         return null;
     }
+
+    @Override
+    public List<User> getAllUsers(){
+        return users;
+    }
+
+    @Override
+    public void deleteUser(User user){
+        users.remove(user);
+    }
 }
