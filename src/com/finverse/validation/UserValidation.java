@@ -14,4 +14,7 @@ public class UserValidation {
         return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!_*()\\-]).{8,}$");
     }
 
+    public static boolean isValidPin(String pin) {
+        return pin.matches("\\d{4}");
+    }
 }
