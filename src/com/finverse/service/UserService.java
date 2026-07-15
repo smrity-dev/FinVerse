@@ -96,12 +96,10 @@ public class UserService {
                                  String lastName,
                                  String email,
                                  String phone) {
-        if (!user.getEmail().equalsIgnoreCase(email)
-                && userDAO.emailExists(email)) {
+        if (!user.getEmail().equalsIgnoreCase(email) && userDAO.emailExists(email)) {
             return false;
         }
-        if (!user.getPhoneNumber().equals(phone)
-                && userDAO.phoneExists(phone)) {
+        if (!user.getPhoneNumber().equals(phone) && userDAO.phoneExists(phone)) {
             return false;
         }
         user.setFirstName(firstName);
@@ -111,5 +109,31 @@ public class UserService {
         user.setUpdatedAt(LocalDateTime.now());
         userDAO.updateUser(user);
         return true;
+    }
+
+    public boolean generatePin(User user, String pin) {
+        if (user.isPinGenerated()) {
+            return false;
+        }
+        user.setAtmPin(pin);
+        user.setPinGenerated(true);
+        user.setUpdatedAt(LocalDateTime.now());
+        userDAO.updateUser(user);
+        return true;
+    }
+
+    public boolean changePin(User user, String oldPin, String newPin) {
+        if (!user.getAtmPin().equals(oldPin)) {
+            return false;
+        }
+        user.setAtmPin(newPin);
+        user.setUpdatedAt(LocalDateTime.now());
+        userDAO.updateUser(user);
+        return true;
+    }
+
+    public boolean verifyPin(User user,String pin) {
+        return user.getAtmPin() != null &&
+                user.getAtmPin().equals(pin);
     }
 }
