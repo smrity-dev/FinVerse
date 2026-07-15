@@ -14,6 +14,7 @@ public class Account {
     private int userId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private BigDecimal interestEarned = BigDecimal.ZERO;
 
     // Default Constructor
     public Account() {
@@ -77,6 +78,13 @@ public class Account {
     }
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public BigDecimal getInterestEarned() {
+        return interestEarned;
+    }
+    public void setInterestEarned(BigDecimal interestEarned) {
+        this.interestEarned = interestEarned;
     }
 
     public Account(int accountId, String accountNumber, AccountType accountType, AccountStatus accountStatus, BigDecimal balance, int userId, LocalDateTime createdAt, LocalDateTime updatedAt) {

@@ -14,6 +14,8 @@ public class Transaction {
     private String remarks;
     private LocalDateTime transactionTime;
     private int accountId;
+    private String referenceNumber;
+    private TransactionStatus transactionStatus;
 
     //Default Constructor
     public Transaction() {
@@ -69,6 +71,21 @@ public class Transaction {
         this.accountId = accountId;
     }
 
+    public String getReferenceNumber() {
+        return referenceNumber;
+    }
+
+    public void setReferenceNumber(String referenceNumber) {
+        this.referenceNumber = referenceNumber;
+    }
+
+    public TransactionStatus getTransactionStatus() {
+        return transactionStatus;
+    }
+
+    public void setTransactionStatus(TransactionStatus transactionStatus) {
+        this.transactionStatus = transactionStatus;
+    }
 
     // Generate Constructor
     public Transaction(int transactionId, TransactionType transactionType, BigDecimal amount, BigDecimal balanceAfterTransaction, String remarks, LocalDateTime transactionTime, int accountId) {
@@ -89,13 +106,15 @@ public class Transaction {
                 DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy | hh:mm:ss a");
 
         return "Transaction{" +
-                "transactionId=" + transactionId +
-                ", transactionType='" + transactionType + '\'' +
-                ", amount=" + amount +
-                ", balanceAfterTransaction=" + balanceAfterTransaction +
-                ", remarks='" + remarks + '\'' +
-                ", transactionTime=" + transactionTime.format(formatter) +
-                ", accountId=" + accountId +
+                "\ntransactionId = " + transactionId +
+                "\nReference No = " + referenceNumber +
+                "\nStatus = " + transactionStatus +
+                "\ntransactionType = '" + transactionType + '\'' +
+                "\namount = " + amount +
+                ", balanceAfterTransaction = " + balanceAfterTransaction +
+                ", remarks = '" + remarks + '\'' +
+                ", transactionTime = " + transactionTime.format(formatter) +
+                ", accountId = " + accountId +
                 '}';
     }
 }
