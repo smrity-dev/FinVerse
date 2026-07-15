@@ -5,6 +5,7 @@ import com.finverse.dao.UserDAOImpl;
 import com.finverse.model.Account;
 import com.finverse.model.User;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class UserService {
 
@@ -81,5 +82,34 @@ public class UserService {
         user.setUpdatedAt(LocalDateTime.now());
         userDAO.updateUser(user);
     }
-    
+
+    public List<User> getAllUsers() {
+        return userDAO.getAllUsers();
+    }
+
+    public void deleteUser(User user) {
+        userDAO.deleteUser(user);
+    }
+
+    public boolean updateProfile(User user,
+                                 String firstName,
+                                 String lastName,
+                                 String email,
+                                 String phone) {
+        if (!user.getEmail().equalsIgnoreCase(email)
+                && userDAO.emailExists(email)) {
+            return false;
+        }
+        if (!user.getPhoneNumber().equals(phone)
+                && userDAO.phoneExists(phone)) {
+            return false;
+        }
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmail(email);
+        user.setPhoneNumber(phone);
+        user.setUpdatedAt(LocalDateTime.now());
+        userDAO.updateUser(user);
+        return true;
+    }
 }
