@@ -227,7 +227,6 @@ public class AccountService {
         accountDAO.blockAccount(account);
         return true;
     }
-
     public boolean unblockAccount(int userId) {
         Account account = accountDAO.getAccountByUserId(userId);
         if (account == null) {
@@ -237,6 +236,32 @@ public class AccountService {
         account.setUpdatedAt(LocalDateTime.now());
         accountDAO.activateAccount(account);
         return true;
+    }
+
+    public void addInterest(Account account) {
+        if(account.getAccountType()!=AccountType.SAVINGS){
+            System.out.println("Interest available only for Savings Account.");
+            return;
+        }
+        BigDecimal rate = new BigDecimal("0.04");
+        BigDecimal interest =
+                account.getBalance().multiply(rate);
+        account.setBalance(
+                account.getBalance().add(interest)
+        );
+        account.setInterestEarned(
+                account.getInterestEarned().add(interest)
+        );
+        account.setUpdatedAt(LocalDateTime.now());
+        accountDAO.updateAccount(account);
+        TransactionService.getInstance().saveTransaction(
+                account.getAccountId(),
+                TransactionType.DEPOSIT,
+                interest,
+                account.getBalance(),
+                "Annual Interest"
+        );
+        System.out.println("Interest Added : ₹"+interest);
     }
 
 }

@@ -3,6 +3,7 @@ package com.finverse.service;
 import com.finverse.dao.TransactionDAO;
 import com.finverse.dao.TransactionDAOImpl;
 import com.finverse.model.Transaction;
+import com.finverse.model.TransactionStatus;
 import com.finverse.model.TransactionType;
 
 import java.math.BigDecimal;
@@ -32,14 +33,16 @@ public class TransactionService {
         Transaction transaction = new Transaction();
 
         transaction.setTransactionId(nextTransactionId++);
+        transaction.setReferenceNumber(generateReferenceNumber());
+        transaction.setTransactionStatus(TransactionStatus.SUCCESS);
         transaction.setAccountId(accountId);
         transaction.setTransactionType(type);
         transaction.setAmount(amount);
         transaction.setBalanceAfterTransaction(balance);
         transaction.setRemarks(remarks);
         transaction.setTransactionTime(LocalDateTime.now());
-
         transactionDAO.saveTransaction(transaction);
+
     }
     public List<Transaction> getTransactions(int accountId) {
         return transactionDAO.getTransactions(accountId);
@@ -57,5 +60,9 @@ public class TransactionService {
 
     public int getTotalTransactions() {
         return transactionDAO.getTransactions().size();
+    }
+
+    private String generateReferenceNumber(){
+        return "TXN" + System.currentTimeMillis();
     }
 }
