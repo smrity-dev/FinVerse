@@ -14,6 +14,7 @@ import java.util.List;
 import com.finverse.model.Transaction;
 import com.finverse.service.TransactionService;
 import com.finverse.model.AccountType;
+import com.finverse.service.AdminService;
 
 public class BankingUI {
 
@@ -25,8 +26,9 @@ public class BankingUI {
             System.out.println("                      WELCOME TO FINVERSE ");
             System.out.println("------------------------------------------------------------");
             System.out.println("1. Register");
-            System.out.println("2. Login");
-            System.out.println("3. Exit");
+            System.out.println("2. User Login");
+            System.out.println("3. Admin Login");
+            System.out.println("4. Exit");
             System.out.print("Choose Option: ");
             int choice = scanner.nextInt();
             scanner.nextLine();
@@ -38,6 +40,9 @@ public class BankingUI {
                     loginUser();
                     break;
                 case 3:
+                    adminLogin();
+                    break;
+                case 4:
                     System.out.println("Thank you for using FinVerse.");
                     return;
                 default:
@@ -143,6 +148,25 @@ public class BankingUI {
         }
     }
 
+    private void adminLogin(){
+
+        System.out.println();
+        System.out.println("========== ADMIN LOGIN ==========");
+        System.out.print("Username : ");
+        String username=scanner.nextLine();
+        System.out.print("Password : ");
+        String password=scanner.nextLine();
+        boolean success= AdminService.getInstance().login(username,password);
+        if(success){
+            System.out.println();
+            System.out.println("Welcome Admin.");
+            adminDashboard();
+        }
+        else{
+            System.out.println("Invalid Credentials.");
+        }
+    }
+
     private void userDashboard(User user) {
 
         while (true) {
@@ -233,6 +257,69 @@ public class BankingUI {
         }
     }
 
+    private void adminDashboard(){
+        while(true){
+            System.out.println();
+            System.out.println("========= ADMIN PANEL =========");
+            System.out.println("1. View All Users");
+            System.out.println("2. View All Accounts");
+            System.out.println("3. Search User");
+            System.out.println("4. Search Account");
+            System.out.println("5. Delete User");
+            System.out.println("6. Block User");
+            System.out.println("7. Unblock User");
+            System.out.println("8. Bank Dashboard");
+            System.out.println("9. Logout");
+            int choice=scanner.nextInt();
+            scanner.nextLine();
+            switch(choice){
+                case 1:
+                    viewAllUsers();
+                    break;
+                case 2:
+                    viewAllAccounts();
+                    break;
+                case 3:
+                    searchUser();
+                    break;
+                case 4:
+                    searchAccount();
+                    break;
+                case 5:
+                    deleteUser();
+                    break;
+                case 6:
+                    blockUser();
+                    break;
+                case 7:
+                    unblockUser();
+                    break;
+                case 8:
+                    bankDashboard();
+                    break;
+                case 9:
+                    return;
+                default:
+                    System.out.println("Invalid Choice");
+            }
+        }
+    }
+
+    // Admin Dashboard ke lie
+    private void viewAllUsers() {
+        List<User> users = UserService.getInstance().getAllUsers();
+        if (users.isEmpty()) {
+            System.out.println("\nNo Users Found.");
+            return;
+        }
+        System.out.println("\n========== ALL USERS ==========");
+        for (User user : users) {
+            System.out.println(user);
+            System.out.println("--------------------------------");
+        }
+    }
+
+    // User Dashboard ke lie
     private void viewProfile(User user) {
         System.out.println("\n========== USER PROFILE ==========");
         System.out.println("User ID       : " + user.getUserId());
@@ -246,6 +333,23 @@ public class BankingUI {
         System.out.println("Account Locked : "+user.isAccountLocked());
     }
 
+
+    // Admin Account ke lie
+    private void viewAllAccounts() {
+        List<Account> accounts = AccountService.getInstance().getAllAccounts();
+        if(accounts.isEmpty()){
+            System.out.println("No Accounts Found.");
+            return;
+        }
+        System.out.println();
+        System.out.println("========== ALL ACCOUNTS ==========");
+        for(Account account:accounts){
+            System.out.println(account);
+            System.out.println("--------------------------------");
+        }
+    }
+
+    // User Account ke lie
     private void viewAccount(User user) {
         Account account = AccountService.getInstance().getAccount(user.getUserId());
         System.out.println("\n========== ACCOUNT DETAILS ==========");
@@ -258,7 +362,6 @@ public class BankingUI {
     }
 
     private void deposit(User user) {
-
         AccountService accountService = AccountService.getInstance();
         Account account = accountService.getAccount(user.getUserId());
         BigDecimal amount;
@@ -582,28 +685,36 @@ public class BankingUI {
 
     private void checkBalance(User user) {
 
-        BigDecimal balance = AccountService
-                .getInstance()
-                .checkBalance(user.getUserId());
-
+        BigDecimal balance = AccountService.getInstance().checkBalance(user.getUserId());
         System.out.println("\n========== BALANCE ==========");
         System.out.println("Available Balance : ₹" + balance);
     }
 
     private void accountSummary(User user) {
-        Account account = AccountService
-                .getInstance()
-                .getAccount(user.getUserId());
-        AccountService
-                .getInstance()
-                .printAccountSummary(account);
+        Account account = AccountService.getInstance().getAccount(user.getUserId());
+        AccountService.getInstance().printAccountSummary(account);
     }
 
+    // Admin searches for users
+    private void searchUser() {
+        System.out.print("\nEnter User ID : ");
+        int userId = scanner.nextInt();
+        scanner.nextLine();
+        User user =
+                UserService.getInstance().getUserById(userId);
+        if (user == null) {
+            System.out.println("User Not Found.");
+            return;
+        }
+        System.out.println();
+        System.out.println(user);
+    }
+
+    // User searches for their Account
     private void searchAccount() {
         System.out.print("\nEnter Account Number : ");
         String accountNumber = scanner.nextLine();
-        Account account =
-                AccountService.getInstance().searchAccount(accountNumber);
+        Account account = AccountService.getInstance().searchAccount(accountNumber);
         if(account==null){
             System.out.println("Account Not Found!");
             return;
@@ -725,4 +836,69 @@ public class BankingUI {
             System.out.println("Old PIN Incorrect.");
         }
     }
+
+    private void deleteUser() {
+
+        System.out.print("Enter User ID : ");
+        int id = scanner.nextInt();
+        scanner.nextLine();
+        User user = UserService.getInstance().getUserById(id);
+        if(user==null){
+            System.out.println("User Not Found.");
+            return;
+        }
+        UserService.getInstance().deleteUser(user);
+        System.out.println("User Deleted Successfully.");
+    }
+
+    private void blockUser() {
+
+        System.out.print("Enter User ID : ");
+
+        int userId = scanner.nextInt();
+        scanner.nextLine();
+
+        boolean success =
+                AccountService.getInstance().blockAccount(userId);
+
+        if (success) {
+
+            System.out.println("Account Blocked Successfully.");
+
+        } else {
+
+            System.out.println("User/Account Not Found.");
+
+        }
+    }
+
+    private void unblockUser() {
+
+        System.out.print("Enter User ID : ");
+        int userId = scanner.nextInt();
+        scanner.nextLine();
+        boolean success = AccountService.getInstance().unblockAccount(userId);
+        if (success) {
+            System.out.println("Account Activated Successfully.");
+        } else {
+            System.out.println("User/Account Not Found.");
+        }
+    }
+
+    private void bankDashboard() {
+        System.out.println("\n========== FINVERSE DASHBOARD ==========");
+        System.out.println("Total Users : "
+                + UserService.getInstance().getTotalUsers());
+        System.out.println("Total Accounts : "
+                + AccountService.getInstance().getTotalAccounts());
+        System.out.println("Active Accounts : "
+                + AccountService.getInstance().getActiveAccounts());
+        System.out.println("Closed Accounts : "
+                + AccountService.getInstance().getClosedAccounts());
+        System.out.println("Total Balance : ₹"
+                + AccountService.getInstance().getTotalBankBalance());
+        System.out.println("Total Transactions : "
+                + TransactionService.getInstance().getTotalTransactions());
+    }
+
 }
