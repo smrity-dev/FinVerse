@@ -164,7 +164,9 @@ public class BankingUI {
             System.out.println("13. Search Account");
             System.out.println("14. Change Account Type");
             System.out.println("15. Close Account");
-            System.out.println("16. Logout");
+            System.out.println("16. Generate Pin");
+            System.out.println("17. Change Pin");
+            System.out.println("18. Logout");
 
 
             System.out.print("Choose Option : ");
@@ -217,6 +219,12 @@ public class BankingUI {
                     closeAccount(user);
                     break;
                 case 16:
+                    generatePin(user);
+                    break;
+                case 17:
+                    changePin(user);
+                    break;
+                case 18:
                     System.out.println("Logout Successful!");
                     return;
                 default:
@@ -233,6 +241,9 @@ public class BankingUI {
         System.out.println("Email         : " + user.getEmail());
         System.out.println("Phone Number  : " + user.getPhoneNumber());
         System.out.println("Created At    : " + user.getCreatedAt());
+        System.out.println("Last Login : "+user.getLastLogin());
+        System.out.println("ATM PIN Generated : "+user.isPinGenerated());
+        System.out.println("Account Locked : "+user.isAccountLocked());
     }
 
     private void viewAccount(User user) {
@@ -309,6 +320,19 @@ public class BankingUI {
             System.out.println("Withdraw Amount : ₹" + amount);
             System.out.print("\nConfirm Withdrawal? (Y/N) : ");
             String choice = scanner.nextLine();
+
+            if (!user.isPinGenerated()) {
+                System.out.println("\nGenerate ATM PIN First.");
+                return;
+            }
+            System.out.print("Enter ATM PIN : ");
+            String pin = scanner.nextLine();
+            boolean verified = UserService.getInstance().verifyPin(user, pin);
+            if (!verified) {
+                System.out.println("Incorrect ATM PIN!");
+                return;
+            }
+
             if (choice.equalsIgnoreCase("Y")) {
                 boolean success = accountService.withdraw(account, amount);
                 if (success) {
@@ -354,6 +378,10 @@ public class BankingUI {
             String input = scanner.nextLine();
             try {
                 amount = new BigDecimal(input);
+                if(sender.getBalance().compareTo(amount)<0){
+                    System.out.println("Insufficient Balance!");
+                    return;
+                }
                 if (amount.compareTo(BigDecimal.ZERO) <= 0) {
                     System.out.println("Amount must be greater than zero!");
                     continue;
@@ -374,6 +402,18 @@ public class BankingUI {
             System.out.println("Transfer Cancelled! Not enough amount to transfer");
             return;
         }
+
+        if (!user.isPinGenerated()) {
+            System.out.println("Generate ATM PIN First.");
+            return;
+        }
+        System.out.print("Enter ATM PIN : ");
+        String pin = scanner.nextLine();
+        if (!UserService.getInstance().verifyPin(user, pin)) {
+            System.out.println("Incorrect ATM PIN!");
+            return;
+        }
+
         boolean success = accountService.transfer(sender, receiverAccount, amount);
         if (success) {
             System.out.println("\nTransfer Successful!");
@@ -425,6 +465,10 @@ public class BankingUI {
             while (true) {
                 System.out.print("Enter New Password : ");
                 newPassword = scanner.nextLine();
+                if(currentPassword.equals(newPassword)){
+                    System.out.println("New Password cannot be same as Current Password.");
+                    continue;
+                }
                 if (UserValidation.isValidPassword(newPassword)) {
                     break;
                 }
@@ -614,12 +658,71 @@ public class BankingUI {
             System.out.println("Account Closing Cancelled.");
             return;
         }
+
+        if (!user.isPinGenerated()) {
+            System.out.println("Generate ATM PIN First.");
+            return;
+        }
+        System.out.print("Enter ATM PIN : ");
+        String pin = scanner.nextLine();
+        if (!UserService.getInstance().verifyPin(user, pin)) {
+            System.out.println("Incorrect ATM PIN!");
+            return;
+        }
+
         boolean success= AccountService.getInstance().closeAccount(account);
         if(success){
             System.out.println("Account Closed Successfully.");
         }
         else{
             System.out.println("Unable to Close Account.");
+        }
+    }
+
+    private void generatePin(User user) {
+        if (user.isPinGenerated()) {
+            System.out.println("ATM PIN already generated.");
+            return;
+        }
+        while (true) {
+            System.out.print("Enter 4 Digit PIN : ");
+            String pin = scanner.nextLine();
+            if (!UserValidation.isValidPin(pin)) {
+                System.out.println("Invalid PIN!");
+                continue;
+            }
+            boolean success =
+                    UserService.getInstance()
+                            .generatePin(user, pin);
+            if (success) {
+                System.out.println("ATM PIN Generated Successfully.");
+            }
+            return;
+        }
+    }
+
+    private void changePin(User user) {
+        if (!user.isPinGenerated()) {
+            System.out.println("Generate ATM PIN First.");
+            return;
+        }
+        System.out.print("Old PIN : ");
+        String oldPin = scanner.nextLine();
+        System.out.print("New PIN : ");
+        String newPin = scanner.nextLine();
+        if(oldPin.equals(newPin)){
+            System.out.println("New PIN cannot be same as Old PIN.");
+            return;
+        }
+        if (!UserValidation.isValidPin(newPin)) {
+            System.out.println("PIN must contain exactly 4 digits.");
+            return;
+        }
+        boolean success = UserService.getInstance().changePin(user, oldPin, newPin);
+        if (success) {
+            System.out.println("PIN Changed Successfully.");
+        } else {
+            System.out.println("Old PIN Incorrect.");
         }
     }
 }
