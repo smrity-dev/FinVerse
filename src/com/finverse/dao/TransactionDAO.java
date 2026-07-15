@@ -8,4 +8,5 @@ public interface TransactionDAO {
     void saveTransaction(Transaction transaction);
     List<Transaction> getTransactions(int accountId);
 
+    List<Transaction> getAllTransactions();
 }
