@@ -114,4 +114,47 @@ public class User {
                 ", updatedAt=" + updatedAt.format(formatter) +
                 '}';
     }
+    
+    // Getter and Setter
+
+    private String atmPin;
+    private boolean pinGenerated;
+    private boolean accountLocked;
+    private int failedLoginAttempts;
+    private LocalDateTime lastLogin;
+
+    public String getAtmPin() {
+        return atmPin;
+    }
+    public void setAtmPin(String atmPin) {
+        this.atmPin = atmPin;
+    }
+
+    public boolean isPinGenerated() {
+        return pinGenerated;
+    }
+    public void setPinGenerated(boolean pinGenerated) {
+        this.pinGenerated = pinGenerated;
+    }
+
+    public boolean isAccountLocked() {
+        return accountLocked;
+    }
+    public void setAccountLocked(boolean accountLocked) {
+        this.accountLocked = accountLocked;
+    }
+
+    public int getFailedLoginAttempts() {
+        return failedLoginAttempts;
+    }
+    public void setFailedLoginAttempts(int failedLoginAttempts) {
+        this.failedLoginAttempts = failedLoginAttempts;
+    }
+
+    public LocalDateTime getLastLogin() {
+        return lastLogin;
+    }
+    public void setLastLogin(LocalDateTime lastLogin) {
+        this.lastLogin = lastLogin;
+    }
 }
