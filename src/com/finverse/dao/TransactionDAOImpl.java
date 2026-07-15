@@ -24,8 +24,15 @@ public class TransactionDAOImpl implements TransactionDAO {
         return list;
     }
 
+    // User
     @Override
     public List<Transaction> getAllTransactions(){
+        return transactions;
+    }
+
+    // Admin
+    @Override
+    public List<Transaction> getTransactions() {
         return transactions;
     }
 }

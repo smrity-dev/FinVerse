@@ -9,4 +9,5 @@ public interface TransactionDAO {
     List<Transaction> getTransactions(int accountId);
 
     List<Transaction> getAllTransactions();
+    List<Transaction> getTransactions();
 }

@@ -69,6 +69,16 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
+    public User getUserById(int userId) {
+        for (User user : users) {
+            if (user.getUserId() == userId) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    @Override
     public void deleteUser(User user){
         users.remove(user);
     }
