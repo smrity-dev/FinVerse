@@ -2,6 +2,8 @@ package com.finverse.model;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /**
  * Represents a user in the FinVerse banking system.
@@ -114,7 +116,7 @@ public class User {
                 ", updatedAt=" + updatedAt.format(formatter) +
                 '}';
     }
-    
+
     // Getter and Setter
 
     private String atmPin;
@@ -156,5 +158,23 @@ public class User {
     }
     public void setLastLogin(LocalDateTime lastLogin) {
         this.lastLogin = lastLogin;
+    }
+
+
+    // Initialized
+    private BigDecimal dailyTransferAmount = BigDecimal.ZERO;
+    private LocalDate lastTransferDate;
+    // Getter - Setter
+    public BigDecimal getDailyTransferAmount() {
+        return dailyTransferAmount;
+    }
+    public void setDailyTransferAmount(BigDecimal dailyTransferAmount) {
+        this.dailyTransferAmount = dailyTransferAmount;
+    }
+    public LocalDate getLastTransferDate() {
+        return lastTransferDate;
+    }
+    public void setLastTransferDate(LocalDate lastTransferDate) {
+        this.lastTransferDate = lastTransferDate;
     }
 }
