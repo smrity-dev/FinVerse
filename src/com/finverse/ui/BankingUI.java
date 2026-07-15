@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import com.finverse.model.Transaction;
 import com.finverse.service.TransactionService;
+import com.finverse.model.AccountType;
 
 public class BankingUI {
 
@@ -20,9 +21,9 @@ public class BankingUI {
 
     public void start() {
         while (true) {
-            System.out.println("==================================");
-            System.out.println("      WELCOME TO FINVERSE ");
-            System.out.println("==================================");
+            System.out.println("------------------------------------------------------------");
+            System.out.println("                      WELCOME TO FINVERSE ");
+            System.out.println("------------------------------------------------------------");
             System.out.println("1. Register");
             System.out.println("2. Login");
             System.out.println("3. Exit");
@@ -70,7 +71,7 @@ public class BankingUI {
                 user.setEmail(email);
                 break;
             }
-            System.out.println("Invalid Email Format!");
+            System.out.println("Invalid Email Format! Please use characters,numbers,@,.");
         }
 
         String phone;
@@ -124,17 +125,19 @@ public class BankingUI {
             System.out.print("Enter Password : ");
             String password = scanner.nextLine();
             User user = userService.login(email, password);
+            // Ager UserDAOImpl ke andar user null nhi hua to DashBoard khulega otherwise attempts ++ honge
             if (user != null) {
                 System.out.println("\nLogin Successful!");
                 userDashboard(user);
-                return;
+                return ;
             }
             attempts++;
             if (attempts < 3) {
                 System.out.println("Incorrect Password!");
                 System.out.println("Attempts Left : " + (3 - attempts));
-            } else {
-                System.out.println("Too many failed attempts!");
+            }
+            else {
+                System.out.println("Too many failed attempts! Try Again...");
                 System.out.println("Returning to Main Menu...");
             }
         }
@@ -143,9 +146,9 @@ public class BankingUI {
     private void userDashboard(User user) {
 
         while (true) {
-            System.out.println("\n==============================");
-            System.out.println(" Welcome " + user.getFirstName());
-            System.out.println("==============================");
+            System.out.println("------------------------------------------------------------");
+            System.out.println("                Welcome ! Dear " + user.getFirstName());
+            System.out.println("------------------------------------------------------------");
             System.out.println("1. View Profile");
             System.out.println("2. View Account");
             System.out.println("3. Deposit");
@@ -155,7 +158,14 @@ public class BankingUI {
             System.out.println("7. Mini Statement");
             System.out.println("8. Change Password");
             System.out.println("9. Forgot Password");
-            System.out.println("10. Logout");
+            System.out.println("10. Update Profile");
+            System.out.println("11. Check Balance");
+            System.out.println("12. Account Summary");
+            System.out.println("13. Search Account");
+            System.out.println("14. Change Account Type");
+            System.out.println("15. Close Account");
+            System.out.println("16. Logout");
+
 
             System.out.print("Choose Option : ");
             int choice = scanner.nextInt();
@@ -189,6 +199,24 @@ public class BankingUI {
                     forgotPassword();
                     break;
                 case 10:
+                    updateProfile(user);
+                    break;
+                case 11:
+                    checkBalance(user);
+                    break;
+                case 12:
+                    accountSummary(user);
+                    break;
+                case 13:
+                    searchAccount();
+                    break;
+                case 14:
+                    changeAccountType(user);
+                    break;
+                case 15:
+                    closeAccount(user);
+                    break;
+                case 16:
                     System.out.println("Logout Successful!");
                     return;
                 default:
@@ -464,5 +492,134 @@ public class BankingUI {
         }
         userService.resetPassword(user, newPassword);
         System.out.println("\nPassword Reset Successfully!");
+    }
+
+    private void updateProfile(User user) {
+        UserService userService = UserService.getInstance();
+        System.out.println("\n========== UPDATE PROFILE ==========");
+        System.out.print("First Name : ");
+        String firstName = scanner.nextLine();
+        System.out.print("Last Name : ");
+        String lastName = scanner.nextLine();
+        String email;
+        while (true) {
+            System.out.print("Email : ");
+            email = scanner.nextLine();
+            if (!UserValidation.isValidEmail(email)) {
+                System.out.println("Invalid Email!");
+                continue;
+            }
+            break;
+        }
+        String phone;
+        while (true) {
+            System.out.print("Phone Number : ");
+            phone = scanner.nextLine();
+            if (!UserValidation.isValidPhone(phone)) {
+                System.out.println("Invalid Phone Number!");
+                continue;
+            }
+            break;
+        }
+        boolean success = userService.updateProfile(
+                user,
+                firstName,
+                lastName,
+                email,
+                phone
+        );
+        if(success){
+            System.out.println("\nProfile Updated Successfully!");
+        }
+        else{
+            System.out.println("\nEmail or Phone Already Exists!");
+        }
+    }
+
+    private void checkBalance(User user) {
+
+        BigDecimal balance = AccountService
+                .getInstance()
+                .checkBalance(user.getUserId());
+
+        System.out.println("\n========== BALANCE ==========");
+        System.out.println("Available Balance : ₹" + balance);
+    }
+
+    private void accountSummary(User user) {
+        Account account = AccountService
+                .getInstance()
+                .getAccount(user.getUserId());
+        AccountService
+                .getInstance()
+                .printAccountSummary(account);
+    }
+
+    private void searchAccount() {
+        System.out.print("\nEnter Account Number : ");
+        String accountNumber = scanner.nextLine();
+        Account account =
+                AccountService.getInstance().searchAccount(accountNumber);
+        if(account==null){
+            System.out.println("Account Not Found!");
+            return;
+        }
+        System.out.println("\n========== ACCOUNT ==========");
+        System.out.println(account);
+    }
+
+    private void changeAccountType(User user){
+        Account account= AccountService.getInstance().getAccount(user.getUserId());
+        System.out.println();
+        System.out.println("1. SAVINGS");
+        System.out.println("2. CURRENT");
+        System.out.println("3. SALARY");
+        System.out.print("Choose : ");
+        int choice=scanner.nextInt();
+        scanner.nextLine();
+        AccountType accountType;
+        switch(choice){
+            case 1:
+                accountType=AccountType.SAVINGS;
+                break;
+            case 2:
+                accountType=AccountType.CURRENT;
+                break;
+            case 3:
+                accountType=AccountType.SALARY;
+                break;
+            default:
+                System.out.println("Invalid Choice!");
+                return;
+        }
+        boolean success= AccountService.getInstance().changeAccountType(account,accountType);
+        if(success){
+            System.out.println("Account Type Updated Successfully.");
+        }
+        else{
+            System.out.println("Account is not Active.");
+        }
+    }
+
+    private void closeAccount(User user){
+        Account account= AccountService.getInstance().getAccount(user.getUserId());
+        if(account.getBalance().compareTo(BigDecimal.ZERO)>0){
+            System.out.println();
+            System.out.println("Withdraw remaining balance before closing account.");
+            return;
+        }
+        System.out.print("Are you sure? (Y/N) : ");
+        String choice=scanner.nextLine();
+        if(!choice.equalsIgnoreCase("Y")){
+            System.out.println("Account Closing Cancelled.");
+            return;
+        }
+        boolean success= AccountService.getInstance().closeAccount(account);
+        if(success){
+            System.out.println("Account Closed Successfully.");
+        }
+        else{
+            System.out.println("Unable to Close Account.");
+        }
     }
 }
