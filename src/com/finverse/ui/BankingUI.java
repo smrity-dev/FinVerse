@@ -196,7 +196,8 @@ public class BankingUI {
             System.out.println("18. Close Account");
             System.out.println("19. Generate Pin");
             System.out.println("20. Change Pin");
-            System.out.println("21. Logout");
+            System.out.println("21. Add Interest");
+            System.out.println("22. Logout");
 
 
             System.out.print("Choose Option : ");
@@ -264,6 +265,9 @@ public class BankingUI {
                     changePin(user);
                     break;
                 case 21:
+                    addInterest(user);
+                    break;
+                case 22:
                     System.out.println("Logout Successful!");
                     return;
                 default:
@@ -999,6 +1003,11 @@ public class BankingUI {
                 + AccountService.getInstance().getTotalBankBalance());
         System.out.println("Total Transactions : "
                 + TransactionService.getInstance().getTotalTransactions());
+    }
+
+    private void addInterest(User user){
+        Account account = AccountService.getInstance().getAccount(user.getUserId());
+        AccountService.getInstance().addInterest(account);
     }
 
 }
