@@ -15,6 +15,9 @@ import com.finverse.model.Transaction;
 import com.finverse.service.TransactionService;
 import com.finverse.model.AccountType;
 import com.finverse.service.AdminService;
+import java.time.LocalDate;
+import com.finverse.model.Beneficiary;
+import com.finverse.service.BeneficiaryService;
 
 public class BankingUI {
 
@@ -177,20 +180,23 @@ public class BankingUI {
             System.out.println("2. View Account");
             System.out.println("3. Deposit");
             System.out.println("4. Withdraw");
-            System.out.println("5. Transfer");
-            System.out.println("6. Transaction History");
-            System.out.println("7. Mini Statement");
-            System.out.println("8. Change Password");
-            System.out.println("9. Forgot Password");
-            System.out.println("10. Update Profile");
-            System.out.println("11. Check Balance");
-            System.out.println("12. Account Summary");
-            System.out.println("13. Search Account");
-            System.out.println("14. Change Account Type");
-            System.out.println("15. Close Account");
-            System.out.println("16. Generate Pin");
-            System.out.println("17. Change Pin");
-            System.out.println("18. Logout");
+            System.out.println("5. Add Beneficiary");
+            System.out.println("6. View Beneficiary");
+            System.out.println("7. Remove Beneficiary");
+            System.out.println("8. Transfer");
+            System.out.println("9. Transaction History");
+            System.out.println("10. Mini Statement");
+            System.out.println("11. Change Password");
+            System.out.println("12. Forgot Password");
+            System.out.println("13. Update Profile");
+            System.out.println("14. Check Balance");
+            System.out.println("15. Account Summary");
+            System.out.println("16. Search Account");
+            System.out.println("17. Change Account Type");
+            System.out.println("18. Close Account");
+            System.out.println("19. Generate Pin");
+            System.out.println("20. Change Pin");
+            System.out.println("21. Logout");
 
 
             System.out.print("Choose Option : ");
@@ -210,45 +216,54 @@ public class BankingUI {
                     withdraw(user);
                     break;
                 case 5:
-                    transfer(user);
+                    addBeneficiary(user);
                     break;
                 case 6:
-                    showTransactions(user);
+                    viewBeneficiaries(user);
                     break;
                 case 7:
-                    miniStatement(user);
+                    removeBeneficiary(user);
                     break;
                 case 8:
-                    changePassword(user);
+                    transfer(user);
                     break;
                 case 9:
-                    forgotPassword();
+                    showTransactions(user);
                     break;
                 case 10:
-                    updateProfile(user);
+                    miniStatement(user);
                     break;
                 case 11:
-                    checkBalance(user);
+                    changePassword(user);
                     break;
                 case 12:
-                    accountSummary(user);
+                    forgotPassword();
                     break;
                 case 13:
-                    searchAccount();
+                    updateProfile(user);
                     break;
                 case 14:
-                    changeAccountType(user);
+                    checkBalance(user);
                     break;
                 case 15:
-                    closeAccount(user);
+                    accountSummary(user);
                     break;
                 case 16:
-                    generatePin(user);
+                    searchAccount();
                     break;
                 case 17:
-                    changePin(user);
+                    changeAccountType(user);
                     break;
                 case 18:
+                    closeAccount(user);
+                    break;
+                case 19:
+                    generatePin(user);
+                    break;
+                case 20:
+                    changePin(user);
+                    break;
+                case 21:
                     System.out.println("Logout Successful!");
                     return;
                 default:
@@ -454,9 +469,68 @@ public class BankingUI {
         }
     }
 
+    private void addBeneficiary(User user) {
+        System.out.println("\n========== ADD BENEFICIARY ==========");
+        System.out.print("Beneficiary Name : ");
+        String name = scanner.nextLine();
+        System.out.print("Account Number : ");
+        String accountNumber = scanner.nextLine().trim();
+        boolean success = BeneficiaryService.getInstance().addBeneficiary(user, name, accountNumber);
+        if (success) {
+            System.out.println("\nBeneficiary Added Successfully.");
+        } else {
+            System.out.println("\nUnable to Add Beneficiary.");
+            System.out.println("Possible Reasons:");
+            System.out.println("• Account does not exist");
+            System.out.println("• Your own account");
+            System.out.println("• Already added");
+            System.out.println("• Maximum 10 beneficiaries reached");
+        }
+    }
+
+    private void viewBeneficiaries(User user) {
+        List<Beneficiary> beneficiaries = BeneficiaryService.getInstance().getBeneficiaries(user.getUserId());
+        System.out.println("\n========== BENEFICIARY LIST ==========");
+        if (beneficiaries.isEmpty()) {
+            System.out.println("No Beneficiary Added.");
+            return;
+        }
+        for (Beneficiary beneficiary : beneficiaries) {
+            System.out.println("--------------------------------");
+            System.out.println("Beneficiary ID : "
+                    + beneficiary.getBeneficiaryId());
+            System.out.println("Name : "
+                    + beneficiary.getBeneficiaryName());
+            System.out.println("Account Number : "
+                    + beneficiary.getAccountNumber());
+            System.out.println("Added On : "
+                    + beneficiary.getAddedAt());
+        }
+    }
+
+    private void removeBeneficiary(User user) {
+        System.out.println("\n========== REMOVE BENEFICIARY ==========");
+        System.out.print("Account Number : ");
+        String accountNumber = scanner.nextLine();
+        boolean success = BeneficiaryService.getInstance().removeBeneficiary(user, accountNumber);
+        if (success) {
+            System.out.println("Beneficiary Removed Successfully.");
+        } else {
+            System.out.println("Beneficiary Not Found.");
+        }
+    }
+
     private void transfer(User user) {
+        // Reset daily transfer amount if new day starts
+        LocalDate today = LocalDate.now();
+        if (user.getLastTransferDate() == null || !user.getLastTransferDate().equals(today))
+        {
+            user.setDailyTransferAmount(BigDecimal.ZERO);
+            user.setLastTransferDate(today);
+        }
         AccountService accountService = AccountService.getInstance();
         Account sender = accountService.getAccount(user.getUserId());
+        // Receiver Account
         String receiverAccount;
         while (true) {
             System.out.print("Receiver Account Number : ");
@@ -473,28 +547,50 @@ public class BankingUI {
                 System.out.println("Account Number not found!");
                 continue;
             }
+            if (!BeneficiaryService.getInstance()
+                    .isBeneficiary(user.getUserId(), receiverAccount)) {
+
+                System.out.println("Receiver is not in your Beneficiary List.");
+                System.out.println("Please Add Beneficiary First.");
+                continue;
+            }
             break;
         }
+        // Amount
         BigDecimal amount;
         while (true) {
             System.out.print("Amount : ₹");
             String input = scanner.nextLine();
             try {
                 amount = new BigDecimal(input);
-                if(sender.getBalance().compareTo(amount)<0){
-                    System.out.println("Insufficient Balance!");
-                    return;
-                }
                 if (amount.compareTo(BigDecimal.ZERO) <= 0) {
                     System.out.println("Amount must be greater than zero!");
                     continue;
+                }
+                if (sender.getBalance().compareTo(amount) < 0) {
+                    System.out.println("Insufficient Balance!");
+                    System.out.println("Available Balance : ₹" + sender.getBalance());
+                    return;
                 }
                 break;
             } catch (NumberFormatException e) {
                 System.out.println("Please enter a valid amount!");
             }
         }
-
+        // Daily Transfer Limit
+        BigDecimal limit = new BigDecimal("50000");
+        if (user.getDailyTransferAmount()
+                .add(amount)
+                .compareTo(limit) > 0) {
+            System.out.println("\nDaily Transfer Limit Exceeded!");
+            System.out.println("Daily Limit : ₹" + limit);
+            System.out.println("Already Used : ₹" + user.getDailyTransferAmount());
+            BigDecimal remaining =
+                    limit.subtract(user.getDailyTransferAmount());
+            System.out.println("Remaining Limit : ₹" + remaining);
+            return;
+        }
+        // Confirmation
         System.out.println("\n========= CONFIRM TRANSFER =========");
         System.out.println("From Account : " + sender.getAccountNumber());
         System.out.println("To Account   : " + receiverAccount);
@@ -502,10 +598,10 @@ public class BankingUI {
         System.out.print("\nConfirm Transfer? (Y/N) : ");
         String choice = scanner.nextLine();
         if (!choice.equalsIgnoreCase("Y")) {
-            System.out.println("Transfer Cancelled! Not enough amount to transfer");
+            System.out.println("Transfer Cancelled!");
             return;
         }
-
+        // PIN Verification
         if (!user.isPinGenerated()) {
             System.out.println("Generate ATM PIN First.");
             return;
@@ -516,9 +612,13 @@ public class BankingUI {
             System.out.println("Incorrect ATM PIN!");
             return;
         }
-
-        boolean success = accountService.transfer(sender, receiverAccount, amount);
+        // Transfer
+        boolean success =
+                accountService.transfer(sender, receiverAccount, amount);
         if (success) {
+            user.setDailyTransferAmount(
+                    user.getDailyTransferAmount().add(amount)
+            );
             System.out.println("\nTransfer Successful!");
             System.out.println("Available Balance : ₹" + sender.getBalance());
         } else {
