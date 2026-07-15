@@ -83,8 +83,18 @@ public class UserService {
         userDAO.updateUser(user);
     }
 
+    // Admin ke lie
+    public int getTotalUsers() {
+        return getAllUsers().size();
+    }
+
+    // User ke lie
     public List<User> getAllUsers() {
         return userDAO.getAllUsers();
+    }
+
+    public User getUserById(int userId){
+        return userDAO.getUserById(userId);
     }
 
     public void deleteUser(User user) {

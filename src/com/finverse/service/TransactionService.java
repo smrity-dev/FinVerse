@@ -55,4 +55,7 @@ public class TransactionService {
         return transactions.subList(size - 5, size);
     }
 
+    public int getTotalTransactions() {
+        return transactionDAO.getTransactions().size();
+    }
 }
