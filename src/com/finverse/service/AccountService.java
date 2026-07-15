@@ -130,4 +130,80 @@ public class AccountService {
     public boolean accountExists(String accountNumber) {
         return accountDAO.getAccountByAccountNumber(accountNumber) != null;
     }
+
+    public BigDecimal checkBalance(int userId) {
+        Account account = accountDAO.getAccountByUserId(userId);
+        if (account == null) {
+            return BigDecimal.ZERO;
+        }
+        return account.getBalance();
+    }
+
+    public void printAccountSummary(Account account) {
+        System.out.println("\n========== ACCOUNT SUMMARY ==========");
+        System.out.println("Account Number : " + account.getAccountNumber());
+        System.out.println("Account Type   : " + account.getAccountType());
+        System.out.println("Status         : " + account.getAccountStatus());
+        System.out.println("Balance        : ₹" + account.getBalance());
+        System.out.println("Created At     : " + account.getCreatedAt());
+        System.out.println("Updated At     : " + account.getUpdatedAt());
+    }
+
+    public Account searchAccount(String accountNumber) {
+        return accountDAO.getAccountByAccountNumber(accountNumber);
+    }
+
+    public boolean changeAccountType(Account account, AccountType accountType) {
+        if (account.getAccountStatus() != AccountStatus.ACTIVE) {
+            return false;
+        }
+        account.setAccountType(accountType);
+        account.setUpdatedAt(LocalDateTime.now());
+        accountDAO.changeAccountType(account, accountType);
+        return true;
+    }
+
+    public void blockAccount(Account account) {
+        account.setAccountStatus(AccountStatus.BLOCKED);
+        account.setUpdatedAt(LocalDateTime.now());
+        accountDAO.blockAccount(account);
+    }
+
+    public void activateAccount(Account account) {
+        account.setAccountStatus(AccountStatus.ACTIVE);
+        account.setUpdatedAt(LocalDateTime.now());
+        accountDAO.activateAccount(account);
+    }
+
+    public boolean closeAccount(Account account) {
+        if (account.getBalance().compareTo(BigDecimal.ZERO) != 0) {
+            return false;
+        }
+        account.setAccountStatus(AccountStatus.CLOSED);
+        account.setUpdatedAt(LocalDateTime.now());
+        accountDAO.closeAccount(account);
+        return true;
+    }
+
+    public void deleteAccount(Account account) {
+        accountDAO.deleteAccount(account);
+    }
+
+    public BigDecimal getTotalBankBalance() {
+        return accountDAO.getTotalBalance();
+    }
+
+    public int getTotalAccounts() {
+        return accountDAO.getTotalAccounts();
+    }
+
+    public int getActiveAccounts() {
+        return accountDAO.getActiveAccounts();
+    }
+
+    public int getClosedAccounts() {
+        return accountDAO.getClosedAccounts();
+    }
+
+
 }
