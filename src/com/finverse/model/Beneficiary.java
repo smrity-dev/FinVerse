@@ -9,6 +9,7 @@ public class Beneficiary {
     private String beneficiaryName;
     private String accountNumber;
     private LocalDateTime addedAt;
+    private boolean favourite;
 
     public Beneficiary() {
     }
@@ -58,6 +59,13 @@ public class Beneficiary {
     }
     public void setAddedAt(LocalDateTime addedAt) {
         this.addedAt = addedAt;
+    }
+    
+    public boolean isFavourite() {
+        return favourite;
+    }
+    public void setFavourite(boolean favourite) {
+        this.favourite = favourite;
     }
 
     @Override
