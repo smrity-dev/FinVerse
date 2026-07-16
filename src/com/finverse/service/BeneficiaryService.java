@@ -5,110 +5,99 @@ import com.finverse.dao.BeneficiaryDAOImpl;
 import com.finverse.model.Account;
 import com.finverse.model.Beneficiary;
 import com.finverse.model.User;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
 public class BeneficiaryService {
 
     private static BeneficiaryService instance;
-
-    private BeneficiaryDAO beneficiaryDAO =
-            new BeneficiaryDAOImpl();
-
+    private BeneficiaryDAO beneficiaryDAO = new BeneficiaryDAOImpl();
     private static int nextBeneficiaryId = 1;
 
     private BeneficiaryService() {
-
     }
 
     public static BeneficiaryService getInstance() {
-
-        if(instance==null){
-            instance=new BeneficiaryService();
+        if (instance == null) {
+            instance = new BeneficiaryService();
         }
-
         return instance;
     }
 
     public boolean addBeneficiary(User user,
-                                  String beneficiaryName,
-                                  String accountNumber){
-
-        Account account =
-                AccountService.getInstance()
-                        .getAccount(user.getUserId());
-
-        // Cannot add own account
-        if(account.getAccountNumber().equals(accountNumber)){
+                                  String accountNumber,
+                                  String beneficiaryName) {
+        Account account = AccountService.getInstance().searchAccount(accountNumber);
+        if (account == null) {
             return false;
         }
-
-        // Account must exist
-        if(!AccountService.getInstance().accountExists(accountNumber)){
+        Account myAccount = AccountService.getInstance().getAccount(user.getUserId());
+        if (myAccount.getAccountNumber().equals(accountNumber)) {
             return false;
         }
-
-        // Duplicate check
-        if(beneficiaryDAO.getBeneficiary(
-                user.getUserId(),
-                accountNumber)!=null){
-
+        if (beneficiaryDAO.getBeneficiary(user.getUserId(), accountNumber) != null) {
             return false;
         }
-
-        // Maximum 10 beneficiaries
-        if(beneficiaryDAO
-                .getBeneficiaries(user.getUserId())
-                .size()>=10){
-
-            return false;
-        }
-
         Beneficiary beneficiary = new Beneficiary();
-
         beneficiary.setBeneficiaryId(nextBeneficiaryId++);
         beneficiary.setUserId(user.getUserId());
         beneficiary.setBeneficiaryName(beneficiaryName);
         beneficiary.setAccountNumber(accountNumber);
         beneficiary.setAddedAt(LocalDateTime.now());
-
         beneficiaryDAO.saveBeneficiary(beneficiary);
-
+        NotificationService.getInstance().addNotification(
+                user.getUserId(),
+                "Beneficiary Added",
+                beneficiaryName + " has been added to your beneficiary list."
+        );
         return true;
     }
 
-    public List<Beneficiary> getBeneficiaries(int userId){
-
+    public List<Beneficiary> getBeneficiaries(int userId) {
         return beneficiaryDAO.getBeneficiaries(userId);
-
+    }
+    public boolean deleteBeneficiary(User user,
+                                     String accountNumber) {
+        Beneficiary beneficiary =
+                beneficiaryDAO.getBeneficiary(
+                        user.getUserId(),
+                        accountNumber
+                );
+        if (beneficiary == null) {
+            return false;
+        }
+        beneficiaryDAO.deleteBeneficiary(beneficiary);
+        NotificationService.getInstance().addNotification(
+                user.getUserId(),
+                "Beneficiary Removed",
+                "Beneficiary has been removed successfully."
+        );
+        return true;
     }
 
-    public boolean removeBeneficiary(User user,
-                                     String accountNumber){
+    public boolean isBeneficiary(User user, String accountNumber) {
+        return beneficiaryDAO.getBeneficiary(
+                user.getUserId(),
+                accountNumber
+        ) != null;
+    }
 
+    public boolean markFavourite(User user,String accountNumber){
         Beneficiary beneficiary =
                 beneficiaryDAO.getBeneficiary(
                         user.getUserId(),
                         accountNumber);
-
         if(beneficiary==null){
             return false;
         }
-
-        beneficiaryDAO.deleteBeneficiary(beneficiary);
-
+        beneficiaryDAO.markFavourite(beneficiary);
         return true;
-
     }
 
-    public boolean isBeneficiary(int userId,
-                                 String accountNumber){
-
-        return beneficiaryDAO.getBeneficiary(
-                userId,
-                accountNumber)!=null;
-
+    public Beneficiary searchBeneficiary(User user,String accountNumber){
+        return beneficiaryDAO.searchBeneficiary(
+                user.getUserId(),
+                accountNumber);
     }
 
 }
