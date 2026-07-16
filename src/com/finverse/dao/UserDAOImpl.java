@@ -75,26 +75,77 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public User login(String email, String password) {
-        for (User user : users) {
-            if (user.getEmail().equals(email)
-                    && user.getPassword().equals(password)) {
+
+        String sql = """
+            SELECT *
+            FROM users
+            WHERE email = ? AND password = ?
+            """;
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ps.setString(2, password);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                User user = new User();
+                user.setUserId(rs.getInt("user_id"));
+                user.setFirstName(rs.getString("first_name"));
+                user.setLastName(rs.getString("last_name"));
+                user.setEmail(rs.getString("email"));
+                user.setPhoneNumber(rs.getString("phone_number"));
+                user.setPassword(rs.getString("password"));
+                user.setAtmPin(rs.getString("atm_pin"));
+                user.setPinGenerated(rs.getBoolean("pin_generated"));
+                user.setAccountLocked(rs.getBoolean("account_locked"));
+                user.setFailedLoginAttempts(rs.getInt("failed_login_attempts"));
+                Timestamp lastLogin = rs.getTimestamp("last_login");
+                if (lastLogin != null) {
+                    user.setLastLogin(lastLogin.toLocalDateTime());
+                }
+                user.setDailyTransferAmount(
+                        rs.getBigDecimal("daily_transfer_amount")
+                );
+                java.sql.Date lastTransferDate =
+                        rs.getDate("last_transfer_date");
+                if (lastTransferDate != null) {
+                    user.setLastTransferDate(
+                            lastTransferDate.toLocalDate()
+                    );
+                }
+                user.setCreatedAt(
+                        rs.getTimestamp("created_at").toLocalDateTime()
+                );
+                user.setUpdatedAt(
+                        rs.getTimestamp("updated_at").toLocalDateTime()
+                );
                 return user;
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return null;
     }
 
-        @Override
-        public boolean emailExists(String email) {
-            for (User user : users) {
-                if (user.getEmail().equalsIgnoreCase(email)) {
-                    //equalsIgnoreCase capital small letters ko ignore kar ke compare kare ga ex:-  Smrity and smrity dono same rhega
-                    return true;
-                }
+    @Override
+    public boolean emailExists(String email) {
+        
+        String sql = """
+            SELECT COUNT(*)
+            FROM users
+            WHERE email = ?
+            """;
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
             }
-            return false;
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-
+        return false;
+    }
 
     @Override
     public boolean phoneExists(String phoneNumber) {
