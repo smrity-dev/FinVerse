@@ -70,6 +70,11 @@ public class UserService {
         user.setPassword(newPassword);
         user.setUpdatedAt(LocalDateTime.now());
         userDAO.updateUser(user);
+        NotificationService.getInstance().addNotification(
+                user.getUserId(),
+                "Password Changed",
+                "Your account password has been changed successfully."
+        );
         return true;
     }
 
@@ -81,6 +86,11 @@ public class UserService {
         user.setPassword(newPassword);
         user.setUpdatedAt(LocalDateTime.now());
         userDAO.updateUser(user);
+        NotificationService.getInstance().addNotification(
+                user.getUserId(),
+                "Password Reset",
+                "Your password has been reset successfully."
+        );
     }
 
     // Admin ke lie
@@ -118,6 +128,11 @@ public class UserService {
         user.setPhoneNumber(phone);
         user.setUpdatedAt(LocalDateTime.now());
         userDAO.updateUser(user);
+        NotificationService.getInstance().addNotification(
+                user.getUserId(),
+                "Profile Updated",
+                "Your profile details have been updated successfully."
+        );
         return true;
     }
 
@@ -129,6 +144,11 @@ public class UserService {
         user.setPinGenerated(true);
         user.setUpdatedAt(LocalDateTime.now());
         userDAO.updateUser(user);
+        NotificationService.getInstance().addNotification(
+                user.getUserId(),
+                "ATM PIN Generated",
+                "Your ATM PIN has been generated successfully."
+        );
         return true;
     }
 
@@ -139,6 +159,11 @@ public class UserService {
         user.setAtmPin(newPin);
         user.setUpdatedAt(LocalDateTime.now());
         userDAO.updateUser(user);
+        NotificationService.getInstance().addNotification(
+                user.getUserId(),
+                "ATM PIN Changed",
+                "Your ATM PIN has been changed successfully."
+        );
         return true;
     }
 
