@@ -14,46 +14,47 @@ import java.sql.*;
 public class TransactionDAOImpl implements TransactionDAO {
 
     @Override
-    public void saveTransaction(Transaction transaction) {
+    public boolean saveTransaction(Transaction transaction) {
 
         String sql = """
-            INSERT INTO transactions
-            (
-                transaction_id,
-                account_number,
-                transaction_type,
-                transaction_status,
-                amount,
-                balance_after_transaction,
-                reference_number,
-                description,
-                created_at
-            )
-            VALUES(?,?,?,?,?,?,?,?,?)
-            """;
-
+        INSERT INTO transactions
+        (
+            account_number,
+            transaction_type,
+            transaction_status,
+            amount,
+            balance_after_transaction,
+            reference_number,
+            description,
+            created_at
+        )
+        VALUES(?,?,?,?,?,?,?,?)
+        """;
         try(Connection connection = DBConnection.getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql)){
-
-            ps.setInt(1, transaction.getTransactionId());
-            ps.setString(2, transaction.getAccountNumber());
-            ps.setString(3, transaction.getTransactionType().name());
-            ps.setString(4, transaction.getTransactionStatus().name());
-            ps.setBigDecimal(5, transaction.getAmount());
-            ps.setBigDecimal(6, transaction.getBalanceAfterTransaction());
-            ps.setString(7, transaction.getReferenceNumber());
-            ps.setString(8, transaction.getRemarks());
-
-            ps.setTimestamp(
-                    9,
-                    Timestamp.valueOf(transaction.getTransactionTime())
-            );
-
-            ps.executeUpdate();
-
-        }catch(SQLException e){
+            PreparedStatement ps = connection.prepareStatement(
+                    sql,
+                    Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, transaction.getAccountNumber());
+            ps.setString(2, transaction.getTransactionType().name());
+            ps.setString(3, transaction.getTransactionStatus().name());
+            ps.setBigDecimal(4, transaction.getAmount());
+            ps.setBigDecimal(5, transaction.getBalanceAfterTransaction());
+            ps.setString(6, transaction.getReferenceNumber());
+            ps.setString(7, transaction.getRemarks());
+            ps.setTimestamp(8,
+                    Timestamp.valueOf(transaction.getTransactionTime()));
+            int rows = ps.executeUpdate();
+            if(rows > 0){
+                ResultSet rs = ps.getGeneratedKeys();
+                if(rs.next()){
+                    transaction.setTransactionId(rs.getInt(1));
+                }
+                return true;
+            }
+        } catch(SQLException e){
             e.printStackTrace();
         }
+        return false;
     }
 
     @Override
