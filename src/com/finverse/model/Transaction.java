@@ -13,7 +13,7 @@ public class Transaction {
     private BigDecimal balanceAfterTransaction;
     private String remarks;
     private LocalDateTime transactionTime;
-    private int accountId;
+    private String accountNumber;
     private String referenceNumber;
     private TransactionStatus transactionStatus;
 
@@ -64,11 +64,11 @@ public class Transaction {
         this.transactionTime = transactionTime;
     }
 
-    public int getAccountId() {
-        return accountId;
+    public String getAccountNumber() {
+        return accountNumber;
     }
-    public void setAccountId(int accountId) {
-        this.accountId = accountId;
+    public void setAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
     }
 
     public String getReferenceNumber() {
@@ -88,14 +88,14 @@ public class Transaction {
     }
 
     // Generate Constructor
-    public Transaction(int transactionId, TransactionType transactionType, BigDecimal amount, BigDecimal balanceAfterTransaction, String remarks, LocalDateTime transactionTime, int accountId) {
+    public Transaction(int transactionId, TransactionType transactionType, BigDecimal amount, BigDecimal balanceAfterTransaction, String remarks, LocalDateTime transactionTime, String accountNumber) {
         this.transactionId = transactionId;
         this.transactionType = transactionType;
         this.amount = amount;
         this.balanceAfterTransaction = balanceAfterTransaction;
         this.remarks = remarks;
         this.transactionTime = transactionTime;
-        this.accountId = accountId;
+        this.accountNumber = accountNumber;
     }
 
     // Generate toString()
@@ -114,7 +114,7 @@ public class Transaction {
                 ", balanceAfterTransaction = " + balanceAfterTransaction +
                 ", remarks = '" + remarks + '\'' +
                 ", transactionTime = " + transactionTime.format(formatter) +
-                ", accountId = " + accountId +
+                ", accountNumber = " + accountNumber +
                 '}';
     }
 }
