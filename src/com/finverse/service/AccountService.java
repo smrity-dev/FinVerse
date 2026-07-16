@@ -42,7 +42,11 @@ public class AccountService {
         account.setBalance(BigDecimal.ZERO);
         account.setCreatedAt(LocalDateTime.now());
         account.setUpdatedAt(LocalDateTime.now());
-        accountDAO.saveAccount(account);
+        boolean saved = accountDAO.saveAccount(account);
+        if (!saved) {
+            System.out.println("Account Creation Failed!");
+            return null;
+        }
         NotificationService.getInstance().addNotification(
                 user.getUserId(),
                 "Account Created",
@@ -68,7 +72,7 @@ public class AccountService {
         account.setUpdatedAt(LocalDateTime.now());
         accountDAO.updateAccount(account);
         TransactionService.getInstance().saveTransaction(
-                account.getAccountId(),
+                account.getAccountNumber(),
                 TransactionType.DEPOSIT,
                 amount,
                 account.getBalance(),
@@ -95,7 +99,7 @@ public class AccountService {
         account.setUpdatedAt(LocalDateTime.now());
         accountDAO.updateAccount(account);
         TransactionService.getInstance().saveTransaction(
-                account.getAccountId(),
+                account.getAccountNumber(),
                 TransactionType.WITHDRAW,
                 amount,
                 account.getBalance(),
@@ -135,7 +139,7 @@ public class AccountService {
         accountDAO.updateAccount(sender);
         accountDAO.updateAccount(receiver);
         TransactionService.getInstance().saveTransaction(
-                sender.getAccountId(),
+                sender.getAccountNumber(),
                 TransactionType.TRANSFER,
                 amount,
                 sender.getBalance(),
@@ -148,7 +152,7 @@ public class AccountService {
                         receiver.getAccountNumber()
         );
         TransactionService.getInstance().saveTransaction(
-                receiver.getAccountId(),
+                receiver.getAccountNumber(),
                 TransactionType.DEPOSIT,
                 amount,
                 receiver.getBalance(),
@@ -315,7 +319,7 @@ public class AccountService {
         account.setUpdatedAt(LocalDateTime.now());
         accountDAO.updateAccount(account);
         TransactionService.getInstance().saveTransaction(
-                account.getAccountId(),
+                account.getAccountNumber(),
                 TransactionType.DEPOSIT,
                 interest,
                 account.getBalance(),
@@ -339,7 +343,7 @@ public class AccountService {
         account.setBalance(account.getBalance().add(interest));
         accountDAO.updateAccount(account);
         TransactionService.getInstance().saveTransaction(
-                account.getAccountId(),
+                account.getAccountNumber(),
                 TransactionType.DEPOSIT,
                 interest,
                 account.getBalance(),

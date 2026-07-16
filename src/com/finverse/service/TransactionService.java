@@ -5,7 +5,6 @@ import com.finverse.dao.TransactionDAOImpl;
 import com.finverse.model.Transaction;
 import com.finverse.model.TransactionStatus;
 import com.finverse.model.TransactionType;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,7 +12,6 @@ import java.util.List;
 public class TransactionService {
     private static TransactionService instance;
     private TransactionDAO transactionDAO = new TransactionDAOImpl();
-    private static int nextTransactionId = 1;
     private TransactionService() {
     }
 
@@ -24,7 +22,7 @@ public class TransactionService {
         return instance;
     }
 
-    public void saveTransaction(int accountId,
+    public void saveTransaction(String accountNumber,
                                 TransactionType type,
                                 BigDecimal amount,
                                 BigDecimal balance,
@@ -32,25 +30,28 @@ public class TransactionService {
 
         Transaction transaction = new Transaction();
 
-        transaction.setTransactionId(nextTransactionId++);
         transaction.setReferenceNumber(generateReferenceNumber());
         transaction.setTransactionStatus(TransactionStatus.SUCCESS);
-        transaction.setAccountId(accountId);
+        transaction.setAccountNumber(accountNumber);
         transaction.setTransactionType(type);
         transaction.setAmount(amount);
         transaction.setBalanceAfterTransaction(balance);
         transaction.setRemarks(remarks);
         transaction.setTransactionTime(LocalDateTime.now());
-        transactionDAO.saveTransaction(transaction);
+        boolean saved = transactionDAO.saveTransaction(transaction);
+        if(!saved){
+            System.out.println("Transaction Failed!");
+            return;
+        }
 
     }
-    public List<Transaction> getTransactions(int accountId) {
-        return transactionDAO.getTransactions(accountId);
+    public List<Transaction> getTransactions(String accountNumber) {
+        return transactionDAO.getTransactions(accountNumber);
     }
 
-    public List<Transaction> getMiniStatement(int accountId) {
+    public List<Transaction> getMiniStatement(String accountNumber) {
         List<Transaction> transactions =
-                transactionDAO.getTransactions(accountId);
+                transactionDAO.getTransactions(accountNumber);
         int size = transactions.size();
         if (size <= 5) {
             return transactions;

@@ -11,7 +11,6 @@ public class UserService {
 
     private static UserService instance;
     private UserDAO userDAO = new UserDAOImpl();
-    private static int nextUserId = 1;
 
     private UserService() {
     }
@@ -41,15 +40,15 @@ public class UserService {
             System.out.println("Phone Number Already Registered!");
             return;
         }
-        //User ke andar ID and time set ho gyi
-
-        // Auto Generate User ID
-        user.setUserId(nextUserId++);
         // Created Time
         user.setCreatedAt(LocalDateTime.now());
         // Updated Time
         user.setUpdatedAt(LocalDateTime.now());
-        userDAO.saveUser(user);
+        boolean saved = userDAO.saveUser(user);
+        if (!saved) {
+            System.out.println("\nRegistration Failed!");
+            return;
+        }
         System.out.println("\nRegistration Successful!");
         System.out.println(user);
 
