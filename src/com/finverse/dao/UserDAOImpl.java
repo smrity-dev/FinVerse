@@ -15,13 +15,13 @@ import java.sql.Timestamp;
 
 // UserDAO interface me methods likha hai usi ko define kara hai idher
 public class UserDAOImpl implements UserDAO {
-    
+
     @Override
-    public void saveUser(User user) {
+    public boolean saveUser(User user) {
+
         String sql = """
         INSERT INTO users
         (
-            user_id,
             first_name,
             last_name,
             email,
@@ -37,37 +37,53 @@ public class UserDAOImpl implements UserDAO {
             created_at,
             updated_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
         try (Connection connection = DBConnection.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, user.getUserId());
-            ps.setString(2, user.getFirstName());
-            ps.setString(3, user.getLastName());
-            ps.setString(4, user.getEmail());
-            ps.setString(5, user.getPhoneNumber());
-            ps.setString(6, user.getPassword());
-            ps.setString(7, user.getAtmPin());
-            ps.setBoolean(8, user.isPinGenerated());
-            ps.setBoolean(9, user.isAccountLocked());
-            ps.setInt(10, user.getFailedLoginAttempts());
+             PreparedStatement ps = connection.prepareStatement(
+                     sql,
+                     Statement.RETURN_GENERATED_KEYS
+             )) {
+            ps.setString(1, user.getFirstName());
+            ps.setString(2, user.getLastName());
+            ps.setString(3, user.getEmail());
+            ps.setString(4, user.getPhoneNumber());
+            ps.setString(5, user.getPassword());
+            ps.setString(6, user.getAtmPin());
+            ps.setBoolean(7, user.isPinGenerated());
+            ps.setBoolean(8, user.isAccountLocked());
+            ps.setInt(9, user.getFailedLoginAttempts());
             if (user.getLastLogin() != null) {
-                ps.setTimestamp(11, Timestamp.valueOf(user.getLastLogin()));
+                ps.setTimestamp(10,
+                        Timestamp.valueOf(user.getLastLogin()));
             } else {
-                ps.setTimestamp(11, null);
+                ps.setTimestamp(10, null);
             }
-            ps.setBigDecimal(12, user.getDailyTransferAmount());
+            ps.setBigDecimal(11,
+                    user.getDailyTransferAmount());
             if (user.getLastTransferDate() != null) {
-                ps.setDate(13, java.sql.Date.valueOf(user.getLastTransferDate()));
+                ps.setDate(12,
+                        java.sql.Date.valueOf(
+                                user.getLastTransferDate()));
             } else {
-                ps.setDate(13, null);
+                ps.setDate(12, null);
             }
-            ps.setTimestamp(14, Timestamp.valueOf(user.getCreatedAt()));
-            ps.setTimestamp(15, Timestamp.valueOf(user.getUpdatedAt()));
-            ps.executeUpdate();
+            ps.setTimestamp(13,
+                    Timestamp.valueOf(user.getCreatedAt()));
+            ps.setTimestamp(14,
+                    Timestamp.valueOf(user.getUpdatedAt()));
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                ResultSet rs = ps.getGeneratedKeys();
+                if (rs.next()) {
+                    user.setUserId(rs.getInt(1));
+                }
+                return true;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     @Override

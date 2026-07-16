@@ -5,7 +5,7 @@ import java.util.List;
 
 public interface UserDAO {
 
-    void saveUser(User user);
+    boolean saveUser(User user);
     User login(String email, String password);
 
     boolean emailExists(String email);
