@@ -54,8 +54,12 @@ public class UserService {
 
         AccountService accountService = AccountService.getInstance();
         Account account = accountService.createAccount(user);
-        System.out.println("\nAccount Created Successfully!");
-        System.out.println(account);
+        if (account != null) {
+            System.out.println("\nAccount Created Successfully!");
+            System.out.println(account);
+        } else {
+            System.out.println("\nAccount Creation Failed!");
+        }
     }
 
     public User login(String email, String password) {
@@ -169,5 +173,11 @@ public class UserService {
     public boolean verifyPin(User user,String pin) {
         return user.getAtmPin() != null &&
                 user.getAtmPin().equals(pin);
+    }
+
+    public void lockAccount(User user) {
+        user.setAccountLocked(true);
+        user.setUpdatedAt(LocalDateTime.now());
+        userDAO.updateUser(user);
     }
 }

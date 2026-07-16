@@ -12,7 +12,6 @@ public class BeneficiaryService {
 
     private static BeneficiaryService instance;
     private BeneficiaryDAO beneficiaryDAO = new BeneficiaryDAOImpl();
-    private static int nextBeneficiaryId = 1;
 
     private BeneficiaryService() {
     }
@@ -27,19 +26,26 @@ public class BeneficiaryService {
     public boolean addBeneficiary(User user,
                                   String accountNumber,
                                   String beneficiaryName) {
-        Account account = AccountService.getInstance().searchAccount(accountNumber);
-        if (account == null) {
+        Account account =
+                AccountService.getInstance()
+                        .searchAccount(accountNumber);
+        if(account == null){
             return false;
         }
-        Account myAccount = AccountService.getInstance().getAccount(user.getUserId());
-        if (myAccount.getAccountNumber().equals(accountNumber)) {
+        Account myAccount =
+                AccountService.getInstance()
+                        .getAccount(user.getUserId());
+        if(myAccount.getAccountNumber().equals(accountNumber)){
+            System.out.println("You cannot add your own account.");
             return false;
         }
-        if (beneficiaryDAO.getBeneficiary(user.getUserId(), accountNumber) != null) {
+        if(beneficiaryDAO.getBeneficiary(
+                user.getUserId(),
+                accountNumber)!=null){
+            System.out.println("Beneficiary Already Exists.");
             return false;
         }
         Beneficiary beneficiary = new Beneficiary();
-        beneficiary.setBeneficiaryId(nextBeneficiaryId++);
         beneficiary.setUserId(user.getUserId());
         beneficiary.setBeneficiaryName(beneficiaryName);
         beneficiary.setAccountNumber(accountNumber);
@@ -48,7 +54,7 @@ public class BeneficiaryService {
         NotificationService.getInstance().addNotification(
                 user.getUserId(),
                 "Beneficiary Added",
-                beneficiaryName + " has been added to your beneficiary list."
+                beneficiaryName + " added successfully."
         );
         return true;
     }
@@ -70,7 +76,8 @@ public class BeneficiaryService {
         NotificationService.getInstance().addNotification(
                 user.getUserId(),
                 "Beneficiary Removed",
-                "Beneficiary has been removed successfully."
+                beneficiary.getBeneficiaryName()
+                        + " removed successfully."
         );
         return true;
     }

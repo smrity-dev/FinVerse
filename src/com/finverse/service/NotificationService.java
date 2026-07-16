@@ -10,7 +10,6 @@ public class NotificationService {
 
     private static NotificationService instance;
     private NotificationDAO notificationDAO = new NotificationDAOImpl();
-    private static int nextNotificationId = 1;
 
     private NotificationService() {
     }
@@ -26,7 +25,6 @@ public class NotificationService {
                                 String title,
                                 String message) {
         Notification notification = new Notification();
-        notification.setNotificationId(nextNotificationId++);
         notification.setUserId(userId);
         notification.setTitle(title);
         notification.setMessage(message);
@@ -52,13 +50,10 @@ public class NotificationService {
     }
 
     public void sendNotification(int userId, String message) {
-
-        Notification notification = new Notification();
-        notification.setNotificationId(nextNotificationId++);
-        notification.setUserId(userId);
-        notification.setMessage(message);
-        notification.setRead(false);
-        notification.setCreatedAt(LocalDateTime.now());
-        notificationDAO.saveNotification(notification);
+        addNotification(
+                userId,
+                "Notification",
+                message
+        );
     }
 }

@@ -28,14 +28,14 @@ public class AccountService {
         return instance;
     }
 
-    private String generateAccountNumber() {
-        return "FV" + nextAccountNumber++;
+    private String generateAccountNumber(int userId) {
+        return "FV" + String.format("%07d", userId);
     }
 
     public Account createAccount(User user) {
         Account account = new Account();
         account.setAccountId(nextAccountId++);
-        account.setAccountNumber(generateAccountNumber());
+        account.setAccountNumber(generateAccountNumber(user.getUserId()));
         account.setUserId(user.getUserId());
         account.setAccountType(AccountType.SAVINGS);
         account.setAccountStatus(AccountStatus.ACTIVE);
