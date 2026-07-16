@@ -1,17 +1,14 @@
 package com.finverse.dao;
 
 import com.finverse.model.User;
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 // Database connection imports
 
 import com.finverse.database.DBConnection;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 
 // UserDAO interface me methods likha hai usi ko define kara hai idher
 public class UserDAOImpl implements UserDAO {
