@@ -9,5 +9,7 @@ public interface BeneficiaryDAO {
     List<Beneficiary> getBeneficiaries(int userId);
     Beneficiary getBeneficiary(int userId,String accountNumber);
     void deleteBeneficiary(Beneficiary beneficiary);
-    
+    void markFavourite(Beneficiary beneficiary);
+    Beneficiary searchBeneficiary(int userId,String accountNumber);
+
 }

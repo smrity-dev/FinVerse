@@ -39,4 +39,19 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO{
     public void deleteBeneficiary(Beneficiary beneficiary) {
         beneficiaries.remove(beneficiary);
     }
+
+    @Override
+    public void markFavourite(Beneficiary beneficiary) {
+        beneficiary.setFavourite(true);
+    }
+
+    @Override
+    public Beneficiary searchBeneficiary(int userId,String accountNumber){
+        for(Beneficiary beneficiary:beneficiaries){
+            if(beneficiary.getUserId()==userId
+                    && beneficiary.getAccountNumber().equals(accountNumber))
+                return beneficiary;
+        }
+        return null;
+    }
 }
