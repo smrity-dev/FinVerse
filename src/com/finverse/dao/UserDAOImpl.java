@@ -4,13 +4,73 @@ import com.finverse.model.User;
 import java.util.ArrayList;
 import java.util.List;
 
+// Database connection imports
+
+import com.finverse.database.DBConnection;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
 // UserDAO interface me methods likha hai usi ko define kara hai idher
 public class UserDAOImpl implements UserDAO {
     private static final List<User> users = new ArrayList<>();
 
     @Override
     public void saveUser(User user) {
-        users.add(user);
+        String sql = """
+        INSERT INTO users
+        (
+            user_id,
+            first_name,
+            last_name,
+            email,
+            phone_number,
+            password,
+            atm_pin,
+            pin_generated,
+            account_locked,
+            failed_login_attempts,
+            last_login,
+            daily_transfer_amount,
+            last_transfer_date,
+            created_at,
+            updated_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """;
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, user.getUserId());
+            ps.setString(2, user.getFirstName());
+            ps.setString(3, user.getLastName());
+            ps.setString(4, user.getEmail());
+            ps.setString(5, user.getPhoneNumber());
+            ps.setString(6, user.getPassword());
+            ps.setString(7, user.getAtmPin());
+            ps.setBoolean(8, user.isPinGenerated());
+            ps.setBoolean(9, user.isAccountLocked());
+            ps.setInt(10, user.getFailedLoginAttempts());
+            if (user.getLastLogin() != null) {
+                ps.setTimestamp(11, Timestamp.valueOf(user.getLastLogin()));
+            } else {
+                ps.setTimestamp(11, null);
+            }
+            ps.setBigDecimal(12, user.getDailyTransferAmount());
+            if (user.getLastTransferDate() != null) {
+                ps.setDate(13, java.sql.Date.valueOf(user.getLastTransferDate()));
+            } else {
+                ps.setDate(13, null);
+            }
+            ps.setTimestamp(14, Timestamp.valueOf(user.getCreatedAt()));
+            ps.setTimestamp(15, Timestamp.valueOf(user.getUpdatedAt()));
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
