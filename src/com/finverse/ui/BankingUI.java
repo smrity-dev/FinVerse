@@ -5,25 +5,28 @@ import java.util.Scanner;
 import com.finverse.dao.UserDAO;
 import com.finverse.model.User;
 //Email,phone,password verification ke lie
+import com.finverse.service.*;
 import com.finverse.validation.UserValidation;
-import com.finverse.service.AccountService;
-import com.finverse.service.UserService;
 import com.finverse.model.Account;
 import java.math.BigDecimal;
 import java.util.List;
 import com.finverse.model.Transaction;
-import com.finverse.service.TransactionService;
 import com.finverse.model.AccountType;
-import com.finverse.service.AdminService;
 import java.time.LocalDate;
 import com.finverse.model.Beneficiary;
-import com.finverse.service.BeneficiaryService;
+import com.finverse.service.ScheduledTransferService;
+import com.finverse.model.ScheduledTransfer;
+import com.finverse.model.FixedDeposit;
+import com.finverse.service.FixedDepositService;
+import com.finverse.model.Notification;
+import com.finverse.service.NotificationService;
 
 public class BankingUI {
 
     Scanner scanner = new Scanner(System.in);
 
     public void start() {
+        ScheduledTransferService.getInstance().executeScheduledTransfers();
         while (true) {
             System.out.println("------------------------------------------------------------");
             System.out.println("                      WELCOME TO FINVERSE ");
@@ -172,6 +175,9 @@ public class BankingUI {
 
     private void userDashboard(User user) {
 
+        int unread = NotificationService.getInstance().getUnreadCount(user.getUserId());
+        System.out.println("🔔 Unread Notifications : " + unread);
+
         while (true) {
             System.out.println("------------------------------------------------------------");
             System.out.println("                Welcome ! Dear " + user.getFirstName());
@@ -197,7 +203,17 @@ public class BankingUI {
             System.out.println("19. Generate Pin");
             System.out.println("20. Change Pin");
             System.out.println("21. Add Interest");
-            System.out.println("22. Logout");
+            System.out.println("22. Scheduled Transfers");
+            System.out.println("23. View Scheduled Transfers");
+            System.out.println("24. Cancel Scheduled Transfers");
+            System.out.println("25. Create Fixed Deposit");
+            System.out.println("26. View Fixed Deposit");
+            System.out.println("27. Close Fixed Deposit");
+            System.out.println("28. View Notifications");
+            System.out.println("29. Mark All Notifications as Read");
+            System.out.println("30. Delete All Notifications");
+            System.out.println("31. Calculate Savings Interest");
+            System.out.println("32. Logout");
 
 
             System.out.print("Choose Option : ");
@@ -223,7 +239,7 @@ public class BankingUI {
                     viewBeneficiaries(user);
                     break;
                 case 7:
-                    removeBeneficiary(user);
+                    deleteBeneficiary(user);
                     break;
                 case 8:
                     transfer(user);
@@ -268,6 +284,36 @@ public class BankingUI {
                     addInterest(user);
                     break;
                 case 22:
+                    scheduleTransfer(user);
+                    break;
+                case 23:
+                    viewScheduledTransfers(user);
+                    break;
+                case 24:
+                    cancelScheduledTransfer(user);
+                    break;
+                case 25:
+                    createFD(user);
+                    break;
+                case 26:
+                    viewFDs(user);
+                    break;
+                case 27:
+                    closeFD(user);
+                    break;
+                case 28:
+                    viewNotifications(user);
+                    break;
+                case 29:
+                    markNotificationsRead(user);
+                    break;
+                case 30:
+                    deleteNotifications(user);
+                    break;
+                case 31:
+                    calculateInterest(user);
+                    break;
+                case 32:
                     System.out.println("Logout Successful!");
                     return;
                 default:
@@ -473,53 +519,55 @@ public class BankingUI {
         }
     }
 
-    private void addBeneficiary(User user) {
-        System.out.println("\n========== ADD BENEFICIARY ==========");
+    private void addBeneficiary(User user){
+        System.out.print("Beneficiary Account Number : ");
+        String account=scanner.nextLine();
         System.out.print("Beneficiary Name : ");
-        String name = scanner.nextLine();
-        System.out.print("Account Number : ");
-        String accountNumber = scanner.nextLine().trim();
-        boolean success = BeneficiaryService.getInstance().addBeneficiary(user, name, accountNumber);
-        if (success) {
-            System.out.println("\nBeneficiary Added Successfully.");
-        } else {
-            System.out.println("\nUnable to Add Beneficiary.");
-            System.out.println("Possible Reasons:");
-            System.out.println("• Account does not exist");
-            System.out.println("• Your own account");
-            System.out.println("• Already added");
-            System.out.println("• Maximum 10 beneficiaries reached");
+        String name=scanner.nextLine();
+        boolean success=
+                BeneficiaryService.getInstance()
+                        .addBeneficiary(
+                                user,
+                                account,
+                                name
+                        );
+        if(success){
+            System.out.println("Beneficiary Added Successfully.");
+        }
+        else{
+            System.out.println("Unable to Add Beneficiary.");
         }
     }
 
-    private void viewBeneficiaries(User user) {
-        List<Beneficiary> beneficiaries = BeneficiaryService.getInstance().getBeneficiaries(user.getUserId());
-        System.out.println("\n========== BENEFICIARY LIST ==========");
-        if (beneficiaries.isEmpty()) {
-            System.out.println("No Beneficiary Added.");
+    private void viewBeneficiaries(User user){
+        List<Beneficiary> list=
+                BeneficiaryService.getInstance()
+                        .getBeneficiaries(user.getUserId());
+        if(list.isEmpty()){
+            System.out.println("No Beneficiaries Found.");
             return;
         }
-        for (Beneficiary beneficiary : beneficiaries) {
-            System.out.println("--------------------------------");
-            System.out.println("Beneficiary ID : "
-                    + beneficiary.getBeneficiaryId());
-            System.out.println("Name : "
-                    + beneficiary.getBeneficiaryName());
-            System.out.println("Account Number : "
-                    + beneficiary.getAccountNumber());
-            System.out.println("Added On : "
-                    + beneficiary.getAddedAt());
+        System.out.println();
+        System.out.println("====== BENEFICIARIES ======");
+        for(Beneficiary beneficiary:list){
+            System.out.println(beneficiary);
+            System.out.println("----------------------");
         }
     }
 
-    private void removeBeneficiary(User user) {
-        System.out.println("\n========== REMOVE BENEFICIARY ==========");
+    private void deleteBeneficiary(User user){
         System.out.print("Account Number : ");
-        String accountNumber = scanner.nextLine();
-        boolean success = BeneficiaryService.getInstance().removeBeneficiary(user, accountNumber);
-        if (success) {
-            System.out.println("Beneficiary Removed Successfully.");
-        } else {
+        String account=scanner.nextLine();
+        boolean success=
+                BeneficiaryService.getInstance()
+                        .deleteBeneficiary(
+                                user,
+                                account
+                        );
+        if(success){
+            System.out.println("Beneficiary Deleted.");
+        }
+        else{
             System.out.println("Beneficiary Not Found.");
         }
     }
@@ -552,10 +600,9 @@ public class BankingUI {
                 continue;
             }
             if (!BeneficiaryService.getInstance()
-                    .isBeneficiary(user.getUserId(), receiverAccount)) {
-
-                System.out.println("Receiver is not in your Beneficiary List.");
-                System.out.println("Please Add Beneficiary First.");
+                    .isBeneficiary(user, receiverAccount)) {
+                System.out.println("This account is not in your Beneficiary List.");
+                System.out.println("Add Beneficiary First.");
                 continue;
             }
             break;
@@ -1010,4 +1057,207 @@ public class BankingUI {
         AccountService.getInstance().addInterest(account);
     }
 
+    private void scheduleTransfer(User user) {
+
+        System.out.print("Receiver Account : ");
+        String receiver = scanner.nextLine();
+        System.out.print("Amount : ₹");
+        BigDecimal amount = new BigDecimal(scanner.nextLine());
+        System.out.print("Transfer Date (yyyy-mm-dd) : ");
+        LocalDate date = LocalDate.parse(scanner.nextLine());
+        boolean success =
+                ScheduledTransferService
+                        .getInstance()
+                        .scheduleTransfer(
+                                user,
+                                receiver,
+                                amount,
+                                date
+                        );
+        if (success) {
+            System.out.println("Transfer Scheduled Successfully.");
+        } else {
+            System.out.println("Unable to Schedule Transfer.");
+        }
+    }
+
+    private void viewScheduledTransfers(User user) {
+
+        List<ScheduledTransfer> list =
+                ScheduledTransferService
+                        .getInstance()
+                        .getSchedules(user.getUserId());
+        if (list.isEmpty()) {
+            System.out.println();
+            System.out.println("No Scheduled Transfers.");
+            return;
+        }
+        System.out.println();
+        System.out.println("========== SCHEDULED TRANSFERS ==========");
+        for (ScheduledTransfer transfer : list) {
+            System.out.println("------------------------------------");
+            System.out.println("Schedule ID : " + transfer.getScheduleId());
+            System.out.println("Receiver    : " + transfer.getReceiverAccount());
+            System.out.println("Amount      : ₹" + transfer.getAmount());
+            System.out.println("Date        : " + transfer.getTransferDate());
+
+            if (transfer.isCompleted()) {
+                System.out.println("Status      : COMPLETED");
+            } else {
+                System.out.println("Status      : PENDING");
+            }
+        }
+    }
+
+    private void cancelScheduledTransfer(User user) {
+
+        System.out.print("Schedule ID : ");
+        int id = scanner.nextInt();
+        scanner.nextLine();
+        boolean success =
+                ScheduledTransferService
+                        .getInstance()
+                        .cancelSchedule(user, id);
+        if (success) {
+            System.out.println("Scheduled Transfer Cancelled.");
+        } else {
+            System.out.println("Unable to Cancel Transfer.");
+        }
+    }
+
+    private void createFD(User user) {
+
+        Account account =
+                AccountService.getInstance()
+                        .getAccount(user.getUserId());
+        System.out.println("\n========== CREATE FIXED DEPOSIT ==========");
+        System.out.println("Available Balance : ₹" + account.getBalance());
+        BigDecimal amount;
+        while (true) {
+            System.out.print("FD Amount : ₹");
+            try {
+                amount = new BigDecimal(scanner.nextLine());
+                if (amount.compareTo(new BigDecimal("5000")) < 0) {
+                    System.out.println("Minimum FD Amount is ₹5000.");
+                    continue;
+                }
+                if (account.getBalance().compareTo(amount) < 0) {
+                    System.out.println("Insufficient Balance.");
+                    return;
+                }
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid Amount.");
+            }
+        }
+        System.out.println();
+        System.out.println("1. 12 Months (6.5%)");
+        System.out.println("2. 24 Months (7%)");
+        System.out.println("3. 36 Months (7.5%)");
+        System.out.print("Choose : ");
+        int choice = scanner.nextInt();
+        scanner.nextLine();
+        int months;
+        switch (choice) {
+            case 1:
+                months = 12;
+                break;
+            case 2:
+                months = 24;
+                break;
+            case 3:
+                months = 36;
+                break;
+            default:
+                System.out.println("Invalid Choice.");
+                return;
+        }
+        System.out.print("Confirm FD (Y/N) : ");
+        String confirm = scanner.nextLine();
+        if (!confirm.equalsIgnoreCase("Y")) {
+            System.out.println("FD Cancelled.");
+            return;
+        }
+        boolean success =
+                FixedDepositService
+                        .getInstance()
+                        .createFD(user, amount, months);
+        if (success) {
+            System.out.println("\nFD Created Successfully.");
+        } else {
+            System.out.println("\nUnable to Create FD.");
+        }
+    }
+
+    private void viewFDs(User user) {
+
+        List<FixedDeposit> list =
+                FixedDepositService
+                        .getInstance()
+                        .getFDs(user.getUserId());
+        if (list.isEmpty()) {
+            System.out.println("No Fixed Deposits.");
+            return;
+        }
+        System.out.println("\n========== YOUR FIXED DEPOSITS ==========");
+        for (FixedDeposit fd : list) {
+            System.out.println("--------------------------------");
+            System.out.println(fd);
+        }
+    }
+
+    private void closeFD(User user) {
+
+        System.out.print("FD ID : ");
+        int id = scanner.nextInt();
+        scanner.nextLine();
+        boolean success =
+                FixedDepositService
+                        .getInstance()
+                        .closeFD(user, id);
+        if (success) {
+            System.out.println("FD Closed Successfully.");
+        } else {
+            System.out.println("Unable to Close FD.");
+        }
+    }
+
+    private void viewNotifications(User user) {
+
+        List<Notification> list =
+                NotificationService.getInstance()
+                        .getNotifications(user.getUserId());
+        if (list.isEmpty()) {
+            System.out.println("\nNo Notifications.");
+            return;
+        }
+        System.out.println("\n========== NOTIFICATIONS ==========");
+        for (Notification notification : list) {
+            System.out.println("--------------------------------");
+            System.out.println(notification);
+        }
+    }
+
+    private void markNotificationsRead(User user) {
+
+        NotificationService.getInstance().markAllAsRead(user.getUserId());
+        System.out.println("All Notifications marked as Read.");
+    }
+
+    private void deleteNotifications(User user) {
+
+        NotificationService.getInstance().deleteAllNotifications(user.getUserId());
+        System.out.println("All Notifications Deleted.");
+    }
+
+    private void calculateInterest(User user) {
+
+        Account account = AccountService.getInstance().getAccount(user.getUserId());
+        BigDecimal interest = AccountService.getInstance().calculateInterest(account);
+        System.out.println();
+        System.out.println("========== INTEREST ==========");
+        System.out.println("Current Balance : ₹" + account.getBalance());
+        System.out.println("Interest Credited : ₹" + interest);
+        System.out.println("Updated Balance : ₹" + account.getBalance());
+    }
 }
