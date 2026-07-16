@@ -15,6 +15,6 @@ public class UserValidation {
     }
 
     public static boolean isValidPin(String pin) {
-        return pin.matches("\\d{4}");
+        return pin.matches("^[0-9]{4}$");
     }
 }
