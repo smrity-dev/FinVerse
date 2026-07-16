@@ -43,6 +43,12 @@ public class AccountService {
         account.setCreatedAt(LocalDateTime.now());
         account.setUpdatedAt(LocalDateTime.now());
         accountDAO.saveAccount(account);
+        NotificationService.getInstance().addNotification(
+                user.getUserId(),
+                "Account Created",
+                "Welcome to FinVerse. Your account number is "
+                        + account.getAccountNumber()
+        );
         return account;
     }
 
@@ -68,6 +74,11 @@ public class AccountService {
                 account.getBalance(),
                 "Cash Deposit"
         );
+        NotificationService.getInstance().sendNotification(
+                account.getUserId(),
+                "₹" + amount + " deposited successfully. Current Balance : ₹"
+                        + account.getBalance()
+        );
     }
 
     public boolean withdraw(Account account, BigDecimal amount) {
@@ -89,6 +100,11 @@ public class AccountService {
                 amount,
                 account.getBalance(),
                 "Cash Withdrawal"
+        );
+        NotificationService.getInstance().sendNotification(
+                account.getUserId(),
+                "₹" + amount + " withdrawn successfully. Current Balance : ₹"
+                        + account.getBalance()
         );
         return true;
     }
@@ -125,12 +141,24 @@ public class AccountService {
                 sender.getBalance(),
                 "Transfer to " + receiver.getAccountNumber()
         );
+        NotificationService.getInstance().sendNotification(
+                sender.getUserId(),
+                "₹" + amount +
+                        " transferred to " +
+                        receiver.getAccountNumber()
+        );
         TransactionService.getInstance().saveTransaction(
                 receiver.getAccountId(),
                 TransactionType.DEPOSIT,
                 amount,
                 receiver.getBalance(),
                 "Received from " + sender.getAccountNumber()
+        );
+        NotificationService.getInstance().sendNotification(
+                receiver.getUserId(),
+                "₹" + amount +
+                        " received from " +
+                        sender.getAccountNumber()
         );
         return true;
     }
@@ -168,6 +196,12 @@ public class AccountService {
         account.setAccountType(accountType);
         account.setUpdatedAt(LocalDateTime.now());
         accountDAO.changeAccountType(account, accountType);
+        NotificationService.getInstance().addNotification(
+                account.getUserId(),
+                "Account Type Changed",
+                "Your account type is now "
+                        + account.getAccountType()
+        );
         return true;
     }
 
@@ -175,12 +209,22 @@ public class AccountService {
         account.setAccountStatus(AccountStatus.BLOCKED);
         account.setUpdatedAt(LocalDateTime.now());
         accountDAO.blockAccount(account);
+        NotificationService.getInstance().addNotification(
+                account.getUserId(),
+                "Account Blocked",
+                "Your account has been blocked by the bank."
+        );
     }
 
     public void activateAccount(Account account) {
         account.setAccountStatus(AccountStatus.ACTIVE);
         account.setUpdatedAt(LocalDateTime.now());
         accountDAO.activateAccount(account);
+        NotificationService.getInstance().addNotification(
+                account.getUserId(),
+                "Account Activated",
+                "Your account has been activated."
+        );
     }
 
     public boolean closeAccount(Account account) {
@@ -190,6 +234,11 @@ public class AccountService {
         account.setAccountStatus(AccountStatus.CLOSED);
         account.setUpdatedAt(LocalDateTime.now());
         accountDAO.closeAccount(account);
+        NotificationService.getInstance().addNotification(
+                account.getUserId(),
+                "Account Closed",
+                "Your account has been closed successfully."
+        );
         return true;
     }
 
@@ -225,8 +274,14 @@ public class AccountService {
         account.setAccountStatus(AccountStatus.BLOCKED);
         account.setUpdatedAt(LocalDateTime.now());
         accountDAO.blockAccount(account);
+        NotificationService.getInstance().addNotification(
+                account.getUserId(),
+                "Blocked Account",
+                "Your account has been blocked."
+        );
         return true;
     }
+
     public boolean unblockAccount(int userId) {
         Account account = accountDAO.getAccountByUserId(userId);
         if (account == null) {
@@ -235,6 +290,11 @@ public class AccountService {
         account.setAccountStatus(AccountStatus.ACTIVE);
         account.setUpdatedAt(LocalDateTime.now());
         accountDAO.activateAccount(account);
+        NotificationService.getInstance().addNotification(
+                account.getUserId(),
+                "Account Unblocked",
+                "Account Unblocked Successfully."
+        );
         return true;
     }
 
@@ -264,4 +324,31 @@ public class AccountService {
         System.out.println("Interest Added : ₹"+interest);
     }
 
+    public BigDecimal calculateInterest(Account account) {
+        if (account.getAccountStatus() != AccountStatus.ACTIVE) {
+            return BigDecimal.ZERO;
+        }
+        if (account.getAccountType() != AccountType.SAVINGS) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal rate = new BigDecimal("3.5");
+        BigDecimal interest =
+                account.getBalance()
+                        .multiply(rate)
+                        .divide(new BigDecimal("100"));
+        account.setBalance(account.getBalance().add(interest));
+        accountDAO.updateAccount(account);
+        TransactionService.getInstance().saveTransaction(
+                account.getAccountId(),
+                TransactionType.DEPOSIT,
+                interest,
+                account.getBalance(),
+                "Savings Interest"
+        );
+        NotificationService.getInstance().sendNotification(
+                account.getUserId(),
+                "₹" + interest + " interest credited."
+        );
+        return interest;
+    }
 }
