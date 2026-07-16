@@ -19,37 +19,35 @@ import java.util.List;
 public class AccountDAOImpl implements AccountDAO {
 
     @Override
-    public void saveAccount(Account account) {
+    public boolean saveAccount(Account account) {
 
         String sql = """
-            INSERT INTO accounts
-            (
-                account_number,
-                user_id,
-                account_type,
-                account_status,
-                balance,
-                created_at,
-                updated_at
-            )
-            VALUES(?,?,?,?,?,?,?)
-            """;
-        try(Connection connection = DBConnection.getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql))
-        {
+        INSERT INTO accounts
+        (
+            account_number,
+            user_id,
+            account_type,
+            account_status,
+            balance,
+            created_at,
+            updated_at
+        )
+        VALUES (?,?,?,?,?,?,?)
+        """;
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, account.getAccountNumber());
             ps.setInt(2, account.getUserId());
             ps.setString(3, account.getAccountType().name());
             ps.setString(4, account.getAccountStatus().name());
             ps.setBigDecimal(5, account.getBalance());
-            ps.setTimestamp(6,
-                    Timestamp.valueOf(account.getCreatedAt()));
-            ps.setTimestamp(7,
-                    Timestamp.valueOf(account.getUpdatedAt()));
-            ps.executeUpdate();
-        }catch(SQLException e){
+            ps.setTimestamp(6, Timestamp.valueOf(account.getCreatedAt()));
+            ps.setTimestamp(7, Timestamp.valueOf(account.getUpdatedAt()));
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     @Override

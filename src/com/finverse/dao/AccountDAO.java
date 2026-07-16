@@ -7,7 +7,7 @@ import com.finverse.model.AccountType;
 
 public interface AccountDAO {
 
-    void saveAccount(Account account);
+    boolean saveAccount(Account account);
     Account getAccountByUserId(int userId);
 
     void updateAccount(Account account);
