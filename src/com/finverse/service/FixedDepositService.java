@@ -18,8 +18,6 @@ public class FixedDepositService {
     private FixedDepositDAO fixedDepositDAO =
             new FixedDepositDAOImpl();
 
-    private static int nextFDId = 1;
-
     private FixedDepositService() {
     }
 
@@ -58,8 +56,8 @@ public class FixedDepositService {
                         months
                 );
         FixedDeposit fd = new FixedDeposit();
-        fd.setFdId(nextFDId++);
         fd.setUserId(user.getUserId());
+        fd.setAccountNumber(account.getAccountNumber());
         fd.setAmount(amount);
         fd.setInterestRate(interestRate);
         fd.setDurationMonths(months);
@@ -69,7 +67,7 @@ public class FixedDepositService {
         fd.setStartDate(today);
         fd.setMaturityDate(today.plusMonths(months));
         fd.setMaturityAmount(maturityAmount);
-        fd.setClosed(false);
+        fd.setStatus("ACTIVE");
 
         // Deduct money from account
         account.setBalance(
@@ -130,7 +128,7 @@ public class FixedDepositService {
         if (fd.getUserId() != user.getUserId()) {
             return false;
         }
-        if (fd.isClosed()) {
+        if(fd.getStatus().equalsIgnoreCase("CLOSED")){
             return false;
         }
         Account account =
@@ -139,7 +137,7 @@ public class FixedDepositService {
         account.setBalance(
                 account.getBalance().add(fd.getMaturityAmount())
         );
-        fd.setClosed(true);
+        fd.setStatus("CLOSED");
         fixedDepositDAO.closeFD(fd);
         NotificationService.getInstance().addNotification(
                 user.getUserId(),
