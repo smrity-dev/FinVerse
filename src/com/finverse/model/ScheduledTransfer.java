@@ -11,6 +11,7 @@ public class ScheduledTransfer {
     private BigDecimal amount;
     private LocalDate transferDate;
     private boolean completed;
+    private String senderAccount;
 
     public int getScheduleId() {
         return scheduleId;
@@ -60,11 +61,16 @@ public class ScheduledTransfer {
         this.completed = completed;
     }
 
+    public String getSenderAccount() { return senderAccount; }
+
+    public void setSenderAccount(String senderAccount) { this.senderAccount = senderAccount; }
+
     @Override
     public String toString() {
 
         return "Schedule ID : " + scheduleId +
                 "\nReceiver : " + receiverAccount +
+                "\nSender : " + senderAccount +
                 "\nAmount : ₹" + amount +
                 "\nDate : " + transferDate +
                 "\nCompleted : " + completed;
