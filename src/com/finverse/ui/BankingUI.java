@@ -35,9 +35,17 @@ public class BankingUI {
             System.out.println("2. User Login");
             System.out.println("3. Admin Login");
             System.out.println("4. Exit");
+
             System.out.print("Choose Option: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+            String input = scanner.nextLine();
+            int choice;
+            try {
+                choice = Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid option.");
+                continue;
+            }
+
             switch (choice) {
                 case 1:
                     registerUser();
@@ -215,10 +223,16 @@ public class BankingUI {
             System.out.println("31. Calculate Savings Interest");
             System.out.println("32. Logout");
 
-
             System.out.print("Choose Option : ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+            String input = scanner.nextLine();
+            int choice;
+            try {
+                choice = Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid option.");
+                continue;
+            }
+
             switch (choice) {
                 case 1:
                     viewProfile(user);
@@ -363,6 +377,7 @@ public class BankingUI {
                     bankDashboard();
                     break;
                 case 9:
+                    System.out.println("Logout Successful");
                     return;
                 default:
                     System.out.println("Invalid Choice");
@@ -463,6 +478,7 @@ public class BankingUI {
         AccountService accountService = AccountService.getInstance();
         Account account = accountService.getAccount(user.getUserId());
         BigDecimal amount;
+
         while (true) {
             System.out.print("Enter Amount : ₹");
             String input = scanner.nextLine();
@@ -479,43 +495,32 @@ public class BankingUI {
                 }
                 break;
             } catch (NumberFormatException e) {
-                System.out.println("Invalid Amount! Please enter a valid number.");
+                System.out.println("Invalid Amount!");
             }
         }
-        while (true) {
-            System.out.println("\n========== CONFIRM WITHDRAW ==========");
-            System.out.println("Account Number : " + account.getAccountNumber());
-            System.out.println("Withdraw Amount : ₹" + amount);
-            System.out.print("\nConfirm Withdrawal? (Y/N) : ");
-            String choice = scanner.nextLine();
 
-            if (!user.isPinGenerated()) {
-                System.out.println("\nGenerate ATM PIN First.");
-                return;
-            }
-            System.out.print("Enter ATM PIN : ");
-            String pin = scanner.nextLine();
-            boolean verified = UserService.getInstance().verifyPin(user, pin);
-            if (!verified) {
-                System.out.println("Incorrect ATM PIN!");
-                return;
-            }
-
-            if (choice.equalsIgnoreCase("Y")) {
-                boolean success = accountService.withdraw(account, amount);
-                if (success) {
-                    System.out.println("\nWithdrawal Successful!");
-                    System.out.println("Remaining Balance : ₹" + account.getBalance());
-                } else {
-                    System.out.println("\nWithdrawal Failed!");
-                }
-                return;
-            } else if (choice.equalsIgnoreCase("N")) {
-                System.out.println("Withdrawal Cancelled!");
-                return;
-            } else {
-                System.out.println("Invalid Choice! Please enter Y or N.");
-            }
+        System.out.println();
+        System.out.println("========== CONFIRM WITHDRAW ==========");
+        System.out.println("Account Number : " + account.getAccountNumber());
+        System.out.println("Withdraw Amount : ₹" + amount);
+        System.out.print("Confirm Withdrawal (Y/N) : ");
+        String choice = scanner.nextLine();
+        if (!choice.equalsIgnoreCase("Y")) {
+            System.out.println("Withdrawal Cancelled.");
+            return;
+        }
+        if (!verifyAtmPin(user)) {
+            return;
+        }
+        boolean success =
+                accountService.withdraw(account, amount);
+        if (success) {
+            System.out.println();
+            System.out.println("Withdrawal Successful!");
+            System.out.println("Remaining Balance : ₹" + account.getBalance());
+        } else {
+            System.out.println();
+            System.out.println("Withdrawal Failed!");
         }
     }
 
@@ -680,7 +685,7 @@ public class BankingUI {
     private void showTransactions(User user) {
         Account account = AccountService.getInstance().getAccount(user.getUserId());
         List<Transaction> transactions = TransactionService.getInstance()
-                .getTransactions(account.getAccountId());
+                .getTransactions(account.getAccountNumber());
         System.out.println("\n========= TRANSACTION HISTORY =========");
         if (transactions.isEmpty()) {
             System.out.println("No Transactions Found.");
@@ -694,7 +699,7 @@ public class BankingUI {
     private void miniStatement(User user) {
         Account account = AccountService.getInstance().getAccount(user.getUserId());
         List<Transaction> transactions = TransactionService.getInstance()
-                .getMiniStatement(account.getAccountId());
+                .getMiniStatement(account.getAccountNumber());
         System.out.println("\n========== MINI STATEMENT ==========");
         if (transactions.isEmpty()) {
             System.out.println("No Transactions Found.");
@@ -961,6 +966,39 @@ public class BankingUI {
             }
             return;
         }
+    }
+
+    private boolean verifyAtmPin(User user) {
+        if (!user.isPinGenerated()) {
+            System.out.println("\nGenerate ATM PIN First.");
+            return false;
+        }
+        if (user.isAccountLocked()) {
+            System.out.println("\nYour Account is Locked.");
+            return false;
+        }
+        int attempts = 3;
+        while (attempts > 0) {
+            System.out.print("Enter ATM PIN : ");
+            String pin = scanner.nextLine();
+            if (UserService.getInstance().verifyPin(user, pin)) {
+                return true;
+            }
+            attempts--;
+            if (attempts > 0) {
+                System.out.println();
+                System.out.println("Incorrect ATM PIN.");
+                System.out.println("Attempts Left : " + attempts);
+            }
+        }
+        UserService.getInstance().lockAccount(user);
+        System.out.println();
+        System.out.println("=================================");
+        System.out.println("Account Locked!");
+        System.out.println("Reason : 3 Incorrect ATM PIN Attempts");
+        System.out.println("Please Contact Customer Support.");
+        System.out.println("=================================");
+        return false;
     }
 
     private void changePin(User user) {
