@@ -13,7 +13,6 @@ public class ScheduledTransferService {
 
     private static ScheduledTransferService instance;
     private ScheduledTransferDAO scheduledTransferDAO = new ScheduledTransferDAOImpl();
-    private static int nextScheduleId = 1;
 
     private ScheduledTransferService() {
     }
@@ -48,9 +47,9 @@ public class ScheduledTransferService {
         }
 
         ScheduledTransfer transfer = new ScheduledTransfer();
-        transfer.setScheduleId(nextScheduleId++);
         transfer.setUserId(user.getUserId());
         transfer.setReceiverAccount(receiverAccount);
+        transfer.setSenderAccount(sender.getAccountNumber());
         transfer.setAmount(amount);
         transfer.setTransferDate(transferDate);
         transfer.setCompleted(false);
