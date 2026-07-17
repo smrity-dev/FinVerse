@@ -34,7 +34,6 @@ public class AccountService {
 
     public Account createAccount(User user) {
         Account account = new Account();
-        account.setAccountId(nextAccountId++);
         account.setAccountNumber(generateAccountNumber(user.getUserId()));
         account.setUserId(user.getUserId());
         account.setAccountType(AccountType.SAVINGS);
