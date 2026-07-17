@@ -11,6 +11,7 @@ import com.finverse.database.DBConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -35,7 +36,11 @@ public class AccountDAOImpl implements AccountDAO {
         VALUES (?,?,?,?,?,?,?)
         """;
         try (Connection connection = DBConnection.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+             PreparedStatement ps =
+                     connection.prepareStatement(
+                             sql,
+                             Statement.RETURN_GENERATED_KEYS
+                     )) {
             ps.setString(1, account.getAccountNumber());
             ps.setInt(2, account.getUserId());
             ps.setString(3, account.getAccountType().name());
@@ -43,8 +48,19 @@ public class AccountDAOImpl implements AccountDAO {
             ps.setBigDecimal(5, account.getBalance());
             ps.setTimestamp(6, Timestamp.valueOf(account.getCreatedAt()));
             ps.setTimestamp(7, Timestamp.valueOf(account.getUpdatedAt()));
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
+            int rows = ps.executeUpdate();
+            if(rows > 0){
+                ResultSet rs = ps.getGeneratedKeys();
+                if(rs.next()){
+                    account.setAccountId(
+                            rs.getInt(1)
+                    );
+                }
+                return true;
+            }
+            return false;
+        }
+        catch (SQLException e) {
             e.printStackTrace();
         }
         return false;
@@ -61,6 +77,9 @@ public class AccountDAOImpl implements AccountDAO {
             ResultSet rs = ps.executeQuery();
             if(rs.next()){
                 Account account = new Account();
+                account.setAccountId(
+                        rs.getInt("account_id")
+                );
                 account.setAccountNumber(
                         rs.getString("account_number"));
                 account.setUserId(
@@ -81,7 +100,8 @@ public class AccountDAOImpl implements AccountDAO {
                                 .toLocalDateTime());
                 return account;
             }
-        }catch(SQLException e){
+        }
+        catch(SQLException e){
             e.printStackTrace();
         }
         return null;
@@ -114,7 +134,8 @@ public class AccountDAOImpl implements AccountDAO {
             ps.setString(5,
                     account.getAccountNumber());
             ps.executeUpdate();
-        }catch(SQLException e){
+        }
+        catch(SQLException e){
             e.printStackTrace();
         }
     }
@@ -129,7 +150,10 @@ public class AccountDAOImpl implements AccountDAO {
             ps.setString(1,accountNumber);
             ResultSet rs=ps.executeQuery();
             if(rs.next()){
-                Account account=new Account();
+                Account account = new Account();
+                account.setAccountId(
+                        rs.getInt("account_id")
+                );
                 account.setAccountNumber(
                         rs.getString("account_number"));
                 account.setUserId(
@@ -150,7 +174,8 @@ public class AccountDAOImpl implements AccountDAO {
                                 .toLocalDateTime());
                 return account;
             }
-        }catch(SQLException e){
+        }
+        catch(SQLException e){
             e.printStackTrace();
         }
         return null;
@@ -158,6 +183,7 @@ public class AccountDAOImpl implements AccountDAO {
 
     @Override
     public List<Account> getAllAccounts() {
+
         List<Account> accounts = new ArrayList<>();
         String sql = "SELECT * FROM accounts";
         try (Connection connection = DBConnection.getConnection();
@@ -165,6 +191,9 @@ public class AccountDAOImpl implements AccountDAO {
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Account account = new Account();
+                account.setAccountId(
+                        rs.getInt("account_id")
+                );
                 account.setAccountNumber(rs.getString("account_number"));
                 account.setUserId(rs.getInt("user_id"));
                 account.setAccountType(
@@ -178,7 +207,8 @@ public class AccountDAOImpl implements AccountDAO {
                         rs.getTimestamp("updated_at").toLocalDateTime());
                 accounts.add(account);
             }
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             e.printStackTrace();
         }
         return accounts;
@@ -187,145 +217,115 @@ public class AccountDAOImpl implements AccountDAO {
     @Override
     public void deleteAccount(Account account) {
 
-        String sql =
-                "DELETE FROM accounts WHERE account_number=?";
-
+        String sql = "DELETE FROM accounts WHERE account_number=?";
         try (Connection connection = DBConnection.getConnection();
              PreparedStatement ps =
                      connection.prepareStatement(sql)) {
-
             ps.setString(1, account.getAccountNumber());
-
             ps.executeUpdate();
-
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     @Override
     public void blockAccount(Account account) {
-
         account.setAccountStatus(AccountStatus.BLOCKED);
-
         updateAccount(account);
     }
 
     @Override
     public void activateAccount(Account account) {
-
         account.setAccountStatus(AccountStatus.ACTIVE);
-
         updateAccount(account);
     }
 
     @Override
     public void closeAccount(Account account) {
-
         account.setAccountStatus(AccountStatus.CLOSED);
-
         updateAccount(account);
     }
 
     @Override
     public void changeAccountType(Account account,
                                   AccountType accountType) {
-
         account.setAccountType(accountType);
-
         updateAccount(account);
     }
 
     @Override
     public BigDecimal getTotalBalance() {
 
-        String sql =
-                "SELECT SUM(balance) total FROM accounts";
-
+        String sql = "SELECT SUM(balance) total FROM accounts";
         try (Connection connection = DBConnection.getConnection();
              PreparedStatement ps =
                      connection.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
-
             if (rs.next()) {
-
                 BigDecimal total = rs.getBigDecimal("total");
-
                 return total == null
                         ? BigDecimal.ZERO
                         : total;
             }
-
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             e.printStackTrace();
         }
-
         return BigDecimal.ZERO;
     }
 
     @Override
     public int getTotalAccounts() {
 
-        String sql =
-                "SELECT COUNT(*) total FROM accounts";
-
+        String sql = "SELECT COUNT(*) total FROM accounts";
         try (Connection connection = DBConnection.getConnection();
              PreparedStatement ps =
                      connection.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
-
             if (rs.next()) {
                 return rs.getInt("total");
             }
-
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             e.printStackTrace();
         }
-
         return 0;
     }
 
     @Override
     public int getActiveAccounts() {
 
-        String sql =
-                "SELECT COUNT(*) total FROM accounts WHERE account_status='ACTIVE'";
-
+        String sql = "SELECT COUNT(*) total FROM accounts WHERE account_status='ACTIVE'";
         try (Connection connection = DBConnection.getConnection();
              PreparedStatement ps =
                      connection.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
-
             if (rs.next()) {
                 return rs.getInt("total");
             }
-
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             e.printStackTrace();
         }
-
         return 0;
     }
 
     @Override
     public int getClosedAccounts() {
 
-        String sql =
-                "SELECT COUNT(*) total FROM accounts WHERE account_status='CLOSED'";
-
+        String sql = "SELECT COUNT(*) total FROM accounts WHERE account_status='CLOSED'";
         try (Connection connection = DBConnection.getConnection();
              PreparedStatement ps =
                      connection.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
-
             if (rs.next()) {
                 return rs.getInt("total");
             }
-
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             e.printStackTrace();
         }
-
         return 0;
     }
 }

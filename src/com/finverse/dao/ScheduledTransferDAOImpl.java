@@ -29,7 +29,7 @@ public class ScheduledTransferDAOImpl implements ScheduledTransferDAO {
         try(Connection con = DBConnection.getConnection();
             PreparedStatement ps =
                     con.prepareStatement(sql,
-                            Statement.RETURN_GEN ERATED_KEYS)){
+                            Statement.RETURN_GENERATED_KEYS)){
             ps.setInt(1, transfer.getUserId());
             ps.setString(2, transfer.getSenderAccount());
             ps.setString(3, transfer.getReceiverAccount());
@@ -142,7 +142,8 @@ public class ScheduledTransferDAOImpl implements ScheduledTransferDAO {
     public List<ScheduledTransfer> getAllSchedules() {
 
         List<ScheduledTransfer> list = new ArrayList<>();
-        String sql = "SELECT * FROM scheduled_transfers ORDER BY transfer_date";
+        String sql =
+                "SELECT * FROM scheduled_transfers ORDER BY transfer_date";
         try(Connection con=DBConnection.getConnection();
             PreparedStatement ps=con.prepareStatement(sql);
             ResultSet rs=ps.executeQuery()){
@@ -195,7 +196,8 @@ public class ScheduledTransferDAOImpl implements ScheduledTransferDAO {
     @Override
     public List<ScheduledTransfer> getSchedules(int userId) {
 
-        List<ScheduledTransfer> list = new ArrayList<>();
+        List<ScheduledTransfer> list =
+                new ArrayList<>();
         String sql = "SELECT * FROM scheduled_transfers WHERE user_id=? ORDER BY transfer_date";
         try(Connection con=DBConnection.getConnection();
             PreparedStatement ps=con.prepareStatement(sql)){
