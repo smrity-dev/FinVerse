@@ -7,13 +7,14 @@ public class FixedDeposit {
 
     private int fdId;
     private int userId;
+    private String accountNumber;
     private BigDecimal amount;
     private double interestRate;
     private int durationMonths;
     private LocalDate startDate;
     private LocalDate maturityDate;
     private BigDecimal maturityAmount;
-    private boolean closed;
+    private String status;
 
     public int getFdId() {
         return fdId;
@@ -79,24 +80,33 @@ public class FixedDeposit {
         this.maturityAmount = maturityAmount;
     }
 
-    public boolean isClosed() {
-        return closed;
+    public String getStatus() {
+        return status;
     }
 
-    public void setClosed(boolean closed) {
-        this.closed = closed;
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+
+    public void setAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
     }
 
     @Override
     public String toString() {
 
         return "FD ID : " + fdId +
+                "\nAccount : ₹" + accountNumber +
                 "\nAmount : ₹" + amount +
                 "\nInterest : " + interestRate + "%" +
                 "\nDuration : " + durationMonths + " Months" +
                 "\nStart Date : " + startDate +
                 "\nMaturity Date : " + maturityDate +
                 "\nMaturity Amount : ₹" + maturityAmount +
-                "\nClosed : " + closed;
+                "\nStatus : " + status;
     }
 }
