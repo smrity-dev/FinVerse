@@ -125,8 +125,31 @@ public class BeneficiaryDAOImpl implements BeneficiaryDAO{
     }
 
     @Override
-    public void markFavourite(Beneficiary beneficiary) {
-        beneficiary.setFavourite(true);
+    public void markFavourite(Beneficiary beneficiary)
+    {
+        String sql = """
+            UPDATE beneficiaries
+            SET favourite=?
+            WHERE beneficiary_id=?
+            """;
+        try(
+                Connection connection =
+                        DBConnection.getConnection();
+                PreparedStatement ps =
+                        connection.prepareStatement(sql)
+        )
+        {
+            ps.setBoolean(
+                    1,
+                    true);
+            ps.setInt(
+                    2,
+                    beneficiary.getBeneficiaryId());
+            ps.executeUpdate();
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
     }
 
     @Override
