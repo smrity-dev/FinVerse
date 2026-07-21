@@ -225,7 +225,11 @@ public class UserDAOImpl implements UserDAO {
             }
             ps.setTimestamp(13, Timestamp.valueOf(user.getUpdatedAt()));
             ps.setInt(14, user.getUserId());
-            ps.executeUpdate();
+            int rows = ps.executeUpdate();
+
+            if (rows == 0) {
+                throw new SQLException("User update failed.");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
